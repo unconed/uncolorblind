@@ -163,12 +163,12 @@ const DAT = {
   "folders": {
     "Scenario": {
       "preset": "Default",
-      "closed": false,
+      "closed": true,
       "folders": {}
     },
     "Settings": {
       "preset": "Default",
-      "closed": false,
+      "closed": true,
       "folders": {}
     },
     "Custom Filter": {
