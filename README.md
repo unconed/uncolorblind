@@ -1,6 +1,6 @@
 # UncolorBlind
 
-**UncolorBlind** is a web app that shows color in ways the color-blind can see.
+**UncolorBlind** is a web app that shows color in ways the color-blind can see more easily.
 
 It is based on an [animated, parameteric GLSL shader](./src/shader.glsl), which implements the color dithering with a few variants and sliders.
 
