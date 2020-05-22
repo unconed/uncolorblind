@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>UncolorBlind</title>
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+  <script type="text/javascript" src="https://acko.net/fonts/fonts.js"></script>
+</head>
+<body>
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font: 16px "Klavika-web", "Helvetica Neue", helvetica, sans-serif;
+    }
+    header {
+      position: absolute;
+      pointer-events: none;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .hint {
+      position: absolute;
+      pointer-events: none;
+      z-index: 3;
+      left: 50%;
+      top: 50%;
+      margin: -200px 0 0 -200px;
+    }
+    canvas {
+      cursor: crosshair;
+    }
+    .hint img {
+      width: 400px;
+      height: 400px;
+    }
+    .tooltip {
+      position: absolute;
+      pointer-events: none;
+      display: none;
+      white-space: nowrap;
+      padding: 5px;
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.5);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+      z-index: 2;
+    }
+    header {
+      animation-iteration-count: 1;
+      animation-fill-mode: forwards;
+      animation-name: fadeout;
+      animation-duration: 20s;
+    }
+    .about {
+      font-size: 14px;
+      color: #ddd;
+      position: absolute;
+      z-index: 3;
+      left: 50%;
+      top: 50%;
+      box-sizing: border-box;
+      width: 400px;
+      height: 460px;
+      margin: -230px 0 0 -200px;
+      padding: 30px;
+      background: rgba(0, 0, 0, 0.9);
+      text-align: center;
+      border-radius: 5px;
+    }
+    .about h1 {
+      font-size: 32px;
+    }
+    .about h1, .about b {
+      color: #fff;
+    }
+    a {
+      color: #ddf;
+    }
+    button {
+      padding: 10px;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: bold;
+      background: #55a;
+      border: 0;
+      border-radius: 5px;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #66b;
+    }
+    button:active {
+      background: #449;
+      outline: 0;
+    }
+    h1, h2 {
+      font-size: 24px;
+      font-weight: bold;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    h2 {
+      font-size: 16px;
+    }
+    .about h1, .about h2, .about p {
+      line-height: 24px;
+      margin: 24px 0;
+      padding: 0;
+    }
+
+    @keyframes fadeout {
+      from {
+        opacity: 1;
+      }
+      20% {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+    
+    .dg.ac {
+      z-index: 10 !important;  
+    }
+  </style>
+  <header>
+    <h1>Un-Colorblind</h1><h2>Sight Enhancer</h2>
+  </header>
+  <div class="tooltip"></div>
+  <div class="hint"><img src="data:image/svg+xml;charset=utf-8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxNi4wLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+DQo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB3aWR0aD0iNDAyLjY2N3B4IiBoZWlnaHQ9IjQwNnB4IiB2aWV3Qm94PSIwIDAgNDAyLjY2NyA0MDYiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDQwMi42NjcgNDA2IiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzkzOTU5OCIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS1kYXNoYXJyYXk9IjEyLjA4NTEsMTIuMDg1MSIgZD0iTTM4OC4yMDgsMjguMTI1DQoJYzAtNi42MjgtNS4zNzMtMTItMTItMTJIMjYuNDU4Yy02LjYyNywwLTEyLDUuMzcyLTEyLDEydjM0OS43NWMwLDYuNjI3LDUuMzczLDEyLDEyLDEyaDM0OS43NWM2LjYyNywwLDEyLTUuMzczLDEyLTEyVjI4LjEyNXoiLz4NCjxnPg0KCTxwYXRoIGZpbGw9IiM5Mzk1OTgiIGQ9Ik0xNDkuMzQyLDI1Mi44OGMwLTMzLjI1MywwLTY2LjUwNywwLTk5Ljc2YzAuMDk1LTAuNDM4LDAuMTc0LTAuODgxLDAuMjg4LTEuMzEzDQoJCWMxLjk1My03LjQxLDYuMzEzLTEyLjY4OSwxMy42MzgtMTUuMzA0YzEuMjIzLTAuNDM3LDIuNTAzLTAuNzE1LDMuNzU2LTEuMDY1YzE1LjY1OSwwLDMxLjMxOCwwLDQ2Ljk3OCwwDQoJCWMxLjQ4MSwwLjczNSwzLjExMiwxLjI3NSw0LjQxOCwyLjI0OWMyLjY2OCwxLjk5LDUuMzAxLDQuMDY5LDcuNjk5LDYuMzcxYzQuODk1LDQuNjk2LDkuNjM3LDkuNTUzLDE0LjQxNCwxNC4zNjgNCgkJYzEuODc5LDEuODk0LDMuNjU3LDMuODg3LDUuNTM4LDUuNzc3YzMuMDY2LDMuMDgxLDUuNzA5LDYuNDM4LDcuMjUzLDEwLjU1OGMwLDI2LjA0LDAsNTIuMDc5LDAsNzguMTE5DQoJCWMtMC4wOTUsMC40MzgtMC4xNzUsMC44OC0wLjI4NywxLjMxM2MtMS45NTMsNy40MS02LjMxMiwxMi42ODgtMTMuNjQsMTUuMzAzYy0xLjIyNCwwLjQzOC0yLjUwMiwwLjcxNS0zLjc1NiwxLjA2Ng0KCQljLTIyLjg3MywwLTQ1Ljc0NSwwLTY4LjYxOCwwYy0yLjgxMy0wLjY5MS01LjU1OC0xLjQ5OC04LjA0Ni0zLjEwMmMtMy42NzMtMi4zNjUtNi40MTgtNS40NzMtOC4wMzUtOS41Mg0KCQlDMTUwLjI4OSwyNTYuMzA1LDE0OS44NjksMjU0LjU3LDE0OS4zNDIsMjUyLjg4eiBNMTU5Ljg5NCwyMDIuODYxYzAsMTUuMzAyLTAuMDA1LDMwLjYwNCwwLjAxMSw0NS45MDcNCgkJYzAuMDAxLDAuOTA0LDAuMTM4LDEuODEyLDAuMjUyLDIuNzEzYzAuNjE5LDQuODY3LDUuMTg5LDguNTMzLDEwLjAxOSw4LjUzMWMyMC42NjctMC4wMDUsNDEuMzMzLTAuMDIxLDYyLjAwMSwwLjAxDQoJCWM1Ljk4NiwwLjAxLDEwLjYwNS00LjYxNywxMC42LTEwLjY3NmMtMC4wMTQtMTYuNjY2LTAuMDA0LTMzLjMzMi0wLjAwNC00OS45OTdjMC01LjYyOSwwLjA2Mi0xMS4yNTktMC4wMjUtMTYuODg2DQoJCWMtMC4wNDctMy4wMjQtMC45NTMtMy44NTUtMy4zNjktNC43MjZjLTEuMjcxLTAuNDU3LTIuNzE3LTAuNTY4LTQuMDg2LTAuNTgyYy02LjExLTAuMDU5LTEyLjIyNS0wLjAyMy0xOC4zMzYtMC4wMjUNCgkJYy0zLjEwOC0wLjAwMi01LjI5Ny0yLjIwOS01LjMzLTUuMzFjLTAuMDczLTYuOTMxLTAuMTA0LTEzLjg2Mi0wLjI5NS0yMC43ODljLTAuMDY3LTIuNTM0LTEuMzA5LTUuMTc0LTUuMTI5LTUuMTEzDQoJCWMtMTEuOTU3LDAuMTktMjMuOTE5LDAuMDY3LTM1Ljg4LDAuMDcxYy01Ljg1NiwwLjAwMi0xMC40MDIsNC41NTktMTAuNDE2LDEwLjQzNkMxNTkuODcsMTcxLjkwNCwxNTkuODk0LDE4Ny4zODMsMTU5Ljg5NCwyMDIuODYxeg0KCQkiLz4NCgk8cGF0aCBmaWxsPSIjOTM5NTk4IiBkPSJNMjAxLjM0OSwyMzkuNDE2Yy05LjE0OCwwLTE4LjI5NywwLjAxNC0yNy40NDQtMC4wMjNjLTAuNzkyLTAuMDAyLTEuNjQ4LTAuMTg4LTIuMzYxLTAuNTI2DQoJCWMtMS41NzktMC43NDktMS43NzEtMS43NzEtMC45MzUtMy40NTFjMS40NDQtMi44OTcsMi43ODctNS44NDksNC4yNy04LjcyNmMxLjk5OC0zLjg4Myw0LjE2OC03LjY3LDcuMTctMTAuODg5DQoJCWMxLjA0MS0xLjExNSwyLjA4NC0yLjQ5NCwzLjg1OC0yLjE5NWMxLjA2LDAuMTc4LDIuMjgzLDAuNTMzLDMuMDIxLDEuMjRjMS43MTksMS42NDYsMy4xNjgsMy41Nyw0Ljc2Myw1LjM1Mg0KCQljMS40NDMsMS42MTEsMi44NjEsMy4xODgsNS4xNzEsMy43MTRjMS42NzIsMC4zODIsMi44NjQtMC4yMTEsMy45OTItMS4xOTNjMi43NzgtMi40Miw0LjAwNi01Ljc3OCw1LjM0Mi05LjA1NQ0KCQljMS40MjktMy41MDEsMi43MjItNy4wNiw0LjI0Mi0xMC41MThjMC42MTItMS4zOTUsMS41NzItMi42ODEsMi41NjUtMy44NTNjMC45OTQtMS4xNzEsMi40MzMtMS4wODEsMy41NjItMC4wMzINCgkJYzIuMDE4LDEuODczLDMuMjgxLDQuMjc4LDQuMjc3LDYuNzQ4YzEuNzk5LDQuNDU5LDMuNDUzLDguOTg3LDQuOTMyLDEzLjU2MmMxLjU5Niw0LjkzOSwyLjk3NSw5Ljk1Myw0LjM0NCwxNC45NjQNCgkJYzAuNjk1LDIuNTUzLTEuMDA0LDUuMDEtMy43MjMsNC45NTJDMjE5LjM4NCwyMzkuMjk4LDIxMC4zNjUsMjM5LjQxNiwyMDEuMzQ5LDIzOS40MTZ6Ii8+DQoJPHBhdGggZmlsbD0iIzkzOTU5OCIgZD0iTTE4NS43MjIsMjAyLjk5NWMtNS45NzksMC4xNTYtMTAuNTEyLTQuNjM2LTEwLjQ4OC0xMC40NjVjMC4wMjMtNS41Myw0LjQ0My0xMC43MjYsMTEuMTI2LTEwLjM4Ng0KCQljNS41MzYsMC4yODEsOS44NzIsNC42NzIsOS45MSwxMC40NjNDMTk2LjMwOCwxOTguMjg5LDE5MS43MjgsMjAzLjI0OCwxODUuNzIyLDIwMi45OTV6Ii8+DQo8L2c+DQo8L3N2Zz4=" alt=""></div>
+  <script src="build/index.bundle.js?8"></script>
+</body>
+</html>
