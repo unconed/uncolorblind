@@ -27,10 +27,10 @@ const DAT = {
         "rainbow": true,
         "pattern": 1,
         "direction": 1,
-        "intensity": 0.6509803921568628,
+        "intensity": 0.65,
         "invert": false,
         "background": 0,
-        "highlight": 0.2916666666666667,
+        "highlight": 0.291,
         "range": 0.45,
         "hardness": 2,
         "exclude": false
@@ -46,7 +46,7 @@ const DAT = {
         "intensity": 1,
         "invert": false,
         "background": 0,
-        "highlight": 0.2916666666666667,
+        "highlight": 0.291,
         "range": 0.59,
         "hardness": 2,
         "exclude": true
@@ -139,27 +139,8 @@ const DAT = {
         "hardness": 4.46,
         "saturation": 0.1,
         "exclude": false
-      }
+      },
     },
-    "9 RGB": {
-      "0": {
-        "plate": "assets/ishihara_9.png",
-        "vision": 0,
-        "active": true,
-        "rainbow": true,
-        "moving": true,
-        "pattern": 1,
-        "direction": 1,
-        "intensity": 0.65,
-        "invert": false,
-        "background": 0,
-        "highlight": 0.05291744273915686,
-        "range": 0.45,
-        "hardness": 2,
-        "saturation": 0.5,
-        "exclude": false
-      }
-    }
   },
   "folders": {
     "Scenario": {
@@ -169,7 +150,7 @@ const DAT = {
     },
     "Settings": {
       "preset": "Default",
-      "closed": false,
+      "closed": true,
       "folders": {}
     },
     "Custom Filter": {
@@ -178,7 +159,7 @@ const DAT = {
       "folders": {}
     }
   },
-  "preset": "9 RGB"
+  "preset": "I9 RGB"
 };
 
 const PLATES = {
@@ -188,6 +169,7 @@ const PLATES = {
   'PAL Test Card': 'assets/pal.png',
   'COVID-19 FT': 'assets/covid19.jpg',
   'Monet': 'assets/monet1.jpg',
+  'Custom': '',
 };
 
 const MODES = {

@@ -7,17 +7,35 @@ const openAbout = () => {
 
   // Static HTML template
   div.innerHTML = `
-  <h1>UncolorBlind</h1>
-  <p>Enjoy this set of virtual<br /><b>un-color blindness goggles</b>.</p>
   
-  <p><b>Drag and drop</b> an image to view it,<br />or use <b>your camera</b> to filter video live.</p>
-  <p>Click to <b>shift the highlighted color tint</b>.<br />The <b>CSS color code</b> is copied to the clipboard.</p>
-  
-  <p>Created by <a href="https://acko.net/" target="_blank">Steven Wittens</a><br /><small><a href="https://github.com/unconed/uncolorblind" target="_blank">Source code</a></small></p>
-  
-  <p class="button"><button>Close</button></p>
+  <div class="flex-if-wide align-center">
+    <h1 class="rigid"><img src="./assets/logo-512.png" width="192" height="192"> UncolorBlind</h1>
 
-  <p class="privacy"><small><em>Your privacy is respected.<br />No data is uploaded to the cloud.</em></small></p>
+    <div class="grow">
+      <div class="grow">
+        <p class="description">Enjoy these virtual <b class="no-wrap">un-color blindness goggles</b>.<br />Browse the <b>examples</b> in the corner to get started.</p>
+        <p><b>Drag and drop</b> an image to view it, or use <b class="no-wrap">your camera</b> to filter video live.<span class="no-mobile"><br />Click to <b>shift the highlighted color tint</b>.<br /><b>CSS color codes</b> are copied to the clipboard.</span></p>
+      </div>
+
+      <div class="flex flex-if-not-narrow justify-center wrap features">
+        <div class="footer flex flex-if-not-narrow">
+  
+          <p class="colofon left"><small>By <a href="https://acko.net/" target="_blank">Steven Wittens</a><br /><a href="https://github.com/unconed/uncolorblind" target="_blank">Source code</a></small></p>
+
+          <div class="privacy flex">
+            <p class="right grow"><img class="no-cloud" src="./assets/no-cloud.svg" width="32" height="38" alt="No Cloud"></p>
+            <p class="grow"><small><em>Nothing is uploaded to the cloud.<br />Your privacy is fully respected.</em></small></p>
+          </div>
+  
+        </div>
+
+        <p class="close button grow"><button>Got it!</button></p>
+      </div>
+    </div>
+  </div>
+
+  <img src="./assets/arrow.svg" class="arrow no-mobile" alt="">
+
   `;
 
   document.body.appendChild(div);

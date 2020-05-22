@@ -8,6 +8,8 @@ precision mediump float;
 
 #ifdef VERTEX
 uniform mat3 projection;
+uniform mat3 view;
+
 attribute vec2 position;
 attribute vec2 uv;
 
@@ -16,7 +18,7 @@ varying vec2 vUVImage;
 
 void main() {
   vUV = uv;
-  vUVImage = (projection * vec3(uv, 1.0)).xy;
+  vUVImage = (view * projection * vec3(uv, 1.0)).xy;
   gl_Position = vec4(position, 0.0, 1.0);
 }
 
@@ -77,6 +79,9 @@ uniform float hardness;
 
 // Minimum saturation (0...1)
 uniform float saturation;
+
+// 2D pattern offset in pixels, use to anchor pattern to screen when panning
+uniform vec2 offset;
 
 #ifdef BACKGROUND_GRID
 // Background level (grayscale)
@@ -152,26 +157,31 @@ vec3 rgb2HSV(vec3 c) {
 ////////////////////////////////////////////////////////////
 // Noise, Distributions & Shaping
 
+// Shitty random
 float nrand(vec2 n) { return fract(sin(dot(n.xy, vec2(12.9893, 11.2331))) * 43758.5453); }
+
+// Saturate
 float sat(float x) { return clamp(x, 0.0, 1.0); }
+
+// Hard band
 float band(float x) { return x < 0.5 ? 1.0 : -1.0; }
+
+// Anti-aliased bands
 float smoothband(float x, float s, float is, float t) {
   float bands = 1.0 - 2.0 * abs(fract(x * is) - 0.5);
   float edges = sat((bands - 0.5) * s * t * 0.5 + 0.5);
   return edges;
 }
+
+// Anti-aliased polka dots
 float smoothpolka(vec2 xy, float s, float is, float t) {
   vec2 bands = 1.0 - 2.0 * abs(fract(xy * is) - 0.5);
   float edges = 1.0 - sat((length(bands) - 0.75) * s * t * 0.5 + 0.5);
   return edges;
 }
-float ramp(float x) { 
-  if (x < 0.0) return 0.0;
-  if (x > 1.0) return 1.0;
-  return x * x * (3.0 - 2.0 * x);
-}
-    
-float blue(vec2 xy) {
+
+// Triangular noise
+float triangular(vec2 xy) {
 	float t = fract(time * 0.1);
 	float rnd = nrand(xy * 0.0171 + 0.07*t);
 
@@ -191,15 +201,21 @@ vec2 rot45(vec2 xy) { return vec2(xy.x + xy.y, xy.x - xy.y) * .707; }
 
 float sqr(float x) { return x*x; }
 
-float ditherBlueNoise() {
-  vec2 xy = gl_FragCoord.xy;
-  return blue(xy) * 4.0;
+vec2 pixelGrid() {
+  #ifdef TEST_PATTERN
+  if (vUV.y <= bar.x) 
+  #endif
+  return gl_FragCoord.xy + offset;
+  return gl_FragCoord.xy;
+} 
+
+float ditherTriangularNoise() {
+  return triangular(pixelGrid()) * 4.0;
 }
 
 float ditherBarberPole() {
-  vec2 xy = gl_FragCoord.xy;
   return smoothband(
-    idpr * (dot(xy, direction) - time * BARBER_STRIPES),
+    idpr * (dot(pixelGrid(), direction) - time * BARBER_STRIPES),
     BARBER_STRIPES,
     1.0/BARBER_STRIPES,
     dpr
@@ -207,8 +223,6 @@ float ditherBarberPole() {
 }
 
 float ditherHyperBarberPole(vec3 hsv) {
-  vec2 xy = gl_FragCoord.xy;
-
   // Find distance to beginning of range
   float modulate = sqr(sat(hsv.y));
   float diff = hsv.x - highlight + range;
@@ -219,7 +233,7 @@ float ditherHyperBarberPole(vec3 hsv) {
   float s = sqr(1.0 + diff * modulate * HYPER_NON_LINEAR * irange) / HYPER_SCALE;
 
   return smoothband(
-    idpr * (dot(xy, direction) * s - time * BARBER_STRIPES),
+    idpr * (dot(pixelGrid(), direction) * s - time * BARBER_STRIPES),
     BARBER_STRIPES,
     1.0/BARBER_STRIPES,
     dpr/s
@@ -227,8 +241,7 @@ float ditherHyperBarberPole(vec3 hsv) {
 }
 
 float ditherPolkaDots() {
-  vec2 xy = gl_FragCoord.xy;
-  return smoothpolka(idpr * rot45(xy - direction * time * POLKA_DOTS), POLKA_DOTS, 1.0/POLKA_DOTS, dpr) * 2.0 - 1.0;
+  return smoothpolka(idpr * rot45(pixelGrid() - direction * time * POLKA_DOTS), POLKA_DOTS, 1.0/POLKA_DOTS, dpr) * 2.0 - 1.0;
 }
 
 vec3 applyDither(vec3 rgb, vec3 hsv, float dither) {
@@ -238,19 +251,10 @@ vec3 applyDither(vec3 rgb, vec3 hsv, float dither) {
 
   // Modulate by hue
   float h = abs(hsv.x - highlight);
+  if (h > 0.5) h = 1.0 - h;
   float select = sat((range - h) * hardness);
 
-  // Wrap-around hue
-  if (highlight < 0.5) {
-    float hw = abs(hsv.x - highlight - 1.0);
-    select += sat((range - hw) * hardness);
-  }
-  else {
-    float hw = abs(hsv.x - highlight + 1.0);
-    select += sat((range - hw) * hardness);
-  }
-
-  // Exclude pattern mask
+  // Invert selection mask
   if (exclude > 0.5) select = 1.0 - select;
 
   // Apply dithered pattern with muted color tint
@@ -332,7 +336,7 @@ void main() {
   vec4 sample = sampleWithBorder(texture, vUVImage, vec4(0, 0, 0, 0));
 
   #ifdef TEST_PATTERN
-  // Draw rainbow test pattern into image
+  // Draw rainbow test pattern on top
   if (rainbow > 0.0) sample = testPattern(sample, vec2(vUV.x, 1.0 - (vUV.y - bar.x) * bar.y));
   #endif
 
@@ -341,7 +345,7 @@ void main() {
   vec3 hsv = rgb2HSV(rgb);
 
   // Dither color with pattern
-  if      (pattern > 3.5) rgb = applyDither(rgb, hsv, ditherBlueNoise());
+  if      (pattern > 3.5) rgb = applyDither(rgb, hsv, ditherTriangularNoise());
   else if (pattern > 2.5) rgb = applyDither(rgb, hsv, ditherPolkaDots());
   else if (pattern > 1.5) rgb = applyDither(rgb, hsv, ditherHyperBarberPole(hsv));
   else if (pattern > 0.5) rgb = applyDither(rgb, hsv, ditherBarberPole());

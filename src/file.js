@@ -75,6 +75,7 @@ const mountLoader = (regl, setLoading, setTexture) => {
   });
 
   const loadTexture = (src) => {
+    if (src == '') return;
     if (loaded == src) return;
     loaded = src;
 
@@ -88,6 +89,7 @@ const mountLoader = (regl, setLoading, setTexture) => {
   }
 
   const loadVideo = video => {
+    if (!video) return;
     if (loaded == video) return;
     loaded = video;
 

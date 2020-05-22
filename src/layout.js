@@ -3,7 +3,11 @@ const mat3 = require('gl-matrix/mat3');
 // scratch matrix
 const m = mat3.create();
 
-const BOTTOM_BAR = 200;
+const CUTOFF_HEIGHT_MEDIUM = 768;
+const CUTOFF_HEIGHT_SMALL = 425;
+const BOTTOM_BAR_LARGE = 200;
+const BOTTOM_BAR_MEDIUM = 100;
+const BOTTOM_BAR_SMALL = 60;
 
 // Rectangle to WxH
 const rectToSize = ([left, top, right, bottom]) => [right - left, bottom - top];
@@ -70,35 +74,38 @@ const getAspect = (image) => {
 }
 
 // Compute layout for main screen
-const getLayout = (image) => {
+const getLayout = (rainbow, image) => {
   const {innerWidth, innerHeight} = window;
   const {texture} = image;
 
   mat3.identity(projection);
 
   // Bottom bar
-  const h = BOTTOM_BAR / innerHeight;
-  const bar  = [1 - h, 1/h];
+  const height = rainbow ? 
+    (innerHeight <= CUTOFF_HEIGHT_SMALL  ? BOTTOM_BAR_SMALL :
+    (innerHeight <= CUTOFF_HEIGHT_MEDIUM ? BOTTOM_BAR_MEDIUM :
+    BOTTOM_BAR_LARGE)) : 0;
 
-  //if (texture.width > 1) debugger;
+  // Lerp bar height for transition
+  const h = height / innerHeight;
+  const f = .5 - Math.cos(rainbow * Math.PI) * .5;
+  const bar  = [1 - h*f, 1 / h];
 
   // Fit in pixel view
   {
-    const viewport = [0, 0, innerWidth, innerHeight - BOTTOM_BAR];
+    const viewport = [0, 0, innerWidth, innerHeight - height*f];
     const size = rectToSize(viewport);
     fitImage(texture, size, projection);
   }
 
-  //console.log(mat3.copy(mat3.create(), projection))
-
   // Fit in UV space
-  {
-    const viewport = [0, 0, 1, 1 - h];
+  if (rainbow) {
+    const viewport = [0, 0, 1, 1 - h*f];
     fitView(viewport, projection);
   }
 
-  const pixel = [1/innerWidth, 1/innerHeight];
-  //console.log(mat3.copy(mat3.create(), projection))
+  // Pixel scale without devicePixelRatio
+  const pixel = [1 / innerWidth, 1 / innerHeight];
 
   return {
     projection,

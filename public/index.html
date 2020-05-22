@@ -6,7 +6,7 @@
   <meta name="viewport" content="initial-scale=1, maximum-scale=1">
   <script type="text/javascript" src="https://acko.net/fonts/fonts.js"></script>
 </head>
-<body>
+<body class="with-bar">
   <style>
     body {
       background: #000;
@@ -26,8 +26,36 @@
       animation-fill-mode: forwards;
       animation-name: fadeout;
       animation-duration: 20s;
+      white-space: nowrap;
     }
-
+    
+    header > img {
+      float: left;
+      margin-right: 16px;
+    }
+    header > h1 {
+      padding-top: 8px;
+    }
+    
+    .rigid {
+      flex-shrink: 0;
+    }
+    .grow {
+      flex-grow: 1;
+    }
+    .flex {
+      display: flex;
+    }
+    .flex.wrap {
+      flex-wrap: wrap;
+    }
+    .justify-center {
+      justify-content: center;
+    }
+    .align-center {
+      align-items: center;
+    }
+    
     .hint {
       position: absolute;
       pointer-events: none;
@@ -35,15 +63,24 @@
       left: 50%;
       top: 50%;
       margin: -250px 0 0 -200px;
+      display: none;
     }
 
     .hint img {
       width: 400px;
       height: 400px;
     }
-        
+
     canvas {
+      position: fixed;
+    }
+
+    canvas.picking {
       cursor: crosshair;
+    }
+
+    body.grabbing canvas {
+      cursor: grabbing;
     }
     
     video {
@@ -69,41 +106,61 @@
       box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
       z-index: 2;
     }
-
-    button.camera {
+    
+    .toolbar {
       position: absolute;
-      right: 0px;
       bottom: 0px;
-      margin: 0 20px 220px 0;
+      right: 0px;
+      margin: 0 10px 10px 0;
+      z-index: 1;
+      transition: bottom .5s ease-in-out;
+    }
+    
+    body.with-bar .toolbar {
+      bottom: 200px;
+    }
+    
+    .toolbar > button {
+      margin-left: 4px !important;
+      margin-top: 4px !important;
+      margin-right: 0 !important;
+      margin-bottom: 0 !important;
+    }
+
+    button.round {
+      margin: 0;
       padding: 0;
       border: 0;
       width: 48px;
       height: 48px;
       border-radius: 100%;
       line-height: 48px;
-      z-index: 1;
       cursor: pointer;
-      background: rgba(255, 255, 255, .8);
+      background: rgba(255, 255, 255, 1);
       box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
       box-sizing: border-box;
     }
-    button.camera:hover {
-      background: rgba(255, 255, 255, 1);
+    button.round:hover {
+      background: rgba(235, 245, 255, 1);
     }
-    button.camera:active {
-      background: rgba(255, 255, 255, .9);
+    button.round:active {
+      background: #9cf;
     }
-    button.camera img {
+    button.round:focus {
+      outline: 0;
+    }
+    button.round img {
       display: block;
       position: relative;
-      left: -1px;
-      top: -1px;
-      opacity: .7;
+      opacity: .85;
     }
-    button.camera:not(.no-camera) img.no-camera {
-      display: none;
-    }
-    button.camera.no-camera img.camera {
+    
+    button.camera:not(.no-camera) img.no-camera,
+    button.camera.no-camera img.camera,
+    button.picking:not(.no-picking) img.no-picking,
+    button.picking.no-picking img.picking,
+    button.rainbow:not(.no-rainbow) img.no-rainbow,
+    button.rainbow.no-rainbow img.rainbow {
       display: none;
     }
 
@@ -111,17 +168,34 @@
       font-size: 14px;
       color: #ddd;
       position: absolute;
-      z-index: 3;
+      z-index: 30;
       left: 50%;
       top: 50%;
       box-sizing: border-box;
-      width: 400px;
-      height: 500px;
-      margin: -250px 0 0 -200px;
+      width: 640px;
+      height: 570px;
+      margin: -330px 0 0 -320px;
       padding: 30px;
       background: rgba(0, 0, 0, 0.9);
       text-align: center;
       border-radius: 5px;
+    }
+    .about .arrow {
+      pointer-events: none;
+      position: absolute;
+      left: 100%;
+      top: 150px;
+      margin-left: -70px;
+      width: 15vw;
+      transform: scale(1, -1);
+    }
+    .about .features {
+      margin-top: 36px;
+    }
+    .about img {
+      display: block;
+      margin: 0 auto;
+      margin-bottom: 24px;
     }
     .about h1 {
       font-size: 32px;
@@ -130,10 +204,19 @@
       color: #fff;
     }
     .about a {
-      color: #bdf;
+      color: #adf;
     }
     .about p.button {
-      margin: 16px 0;
+      margin: 16px 0 0 0;
+    }
+    .about .flex p {
+      margin-top: 0;
+    }
+    .about p.left {
+      text-align: left;
+    }
+    .about p.right {
+      text-align: right;
     }
     .about button {
       padding: 10px 20px;
@@ -153,10 +236,24 @@
       background: #569;
       outline: 0;
     }
-    .about .privacy {
-      opacity: .75;
-      margin-top: 16px;
+    .about p.colofon {
+      width: 151px;
+      margin-right: 16px;
+    }
+    .about div.privacy {
+      opacity: .8;
+      width: 221px;
+    }
+    .about p.colofon, .about div.privacy p {
       line-height: 16px;
+    }
+    .about img.no-cloud {
+      align-self: right;
+      margin-right: 5px;
+      position: relative;
+      left: -5px;
+      top: -2px;
+      opacity: .55;
     }
 
     .spinner {
@@ -184,11 +281,12 @@
       animation-iteration-count: infinite;
       animation-name: spin;
       animation-duration: 2s;
-      border-top: 4px solid rgba(128, 128, 128, 1)
+      border-bottom: 4px solid rgba(128, 128, 128, 1)
+      animation-delay: -2.1s;
     }
     .spinner .shadow.ring {
-      border-top: 4px solid rgba(192, 192, 192, 1);
-      animation-delay: -0.2s;
+      border-bottom: 4px solid rgba(192, 192, 192, 1);
+      animation-delay: -1.9s;
     }
     .spinner .ring1 {
       width: 64px;
@@ -234,6 +332,10 @@
       left: -1000px;
     }
     
+    .no-wrap {
+      white-space: nowrap;
+    }
+    
     @keyframes fadeout {
       from {
         opacity: 1;
@@ -255,14 +357,205 @@
       }
     }
     
+    /* REGL */
+    .regl {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+    }
+    .regl canvas {
+      width: 100%;
+      height: 100%;
+    }
+    
     /* Dat gui layering */
+    .dat-gui {
+      position: absolute;
+      display: none;
+      right: 0;
+      top: 0;
+      z-index: 10;
+    }
+    
+    .dat-gui .dg.main .close-button {
+      padding: 5px;
+      height: 30px;
+      box-sizing: border-box;
+    }
+    
+    /* Responsive layout */
+
+    /* Dat-gui goes full width on < tablet */
+    @media screen 
+    and (min-width : 768px) 
+    and (max-width : 1024px)  {
+      .dat-gui {
+        transform-origin: 100% 0%;
+        transform: scale(1.5, 1.5);
+      }
+    }
+
+    /* Bottom bar responsive height */
+    @media screen 
+    and (max-height : 767px) {
+      body.with-bar .toolbar {
+        bottom: 100px;
+      }
+      header {
+        top: auto;
+        bottom: 100px;
+      }
+    }
+
+    /* Even smaller bottom bar */
+    @media screen 
+    and (max-height : 425px) {
+      body.with-bar .toolbar {
+        bottom: 70px;
+      }
+      header {
+        top: auto;
+        bottom: 70px;
+      }
+    }
+
+    /* Alt about */
+    @media screen 
+    and (max-height : 767px) {
+      .about .arrow { display: none };
+
+      .about .features {
+        max-width: 640px;
+        margin: 0 auto;
+      }
+      .no-mobile {
+        display: none !important;
+      }
+      .flex-if-wide {
+        display: flex;
+      }
+      .spinner {
+        margin: -31px 0 0 -31px;
+      }
+      .dat-gui {
+        left: 16.667%;
+        transform-origin: 100% 0%;
+        transform: scale(1.2, 1.2);
+      }
+      .dat-gui .dg.main .close-button {
+        left: 50%;
+        margin-left: -100px !important;
+        min-width: 0 !important;
+        width: 200px !important;
+        margin: 0 auto;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+      }
+      .about {
+        width: auto;
+        height: auto;
+        margin: 0;
+        left: 0;
+        right: 0;
+        top: 50%;
+        transform: translate(0%, -50%);
+      }
+      .about .flex-if-mobile > * {
+        margin-right: 32px;
+      }
+      .about .footer {
+        max-width: 640px;
+      }
+      .about h1 {
+        font-size: 24px;
+        margin-right: 24px;
+      }
+    }
+    
+    @media screen 
+    and (max-width : 700px) {
+      .about .arrow { display: none }
+
+      .toolbar {
+        width: 48px;
+      }
+      .about h1 {
+        margin-right: 0;
+      }
+      .no-mobile {
+        display: none !important;
+      }
+      .spinner {
+        margin: -31px 0 0 -31px;
+      }
+      .flex-if-wide {
+        display: block;
+      }
+      .dat-gui {
+        left: 16.667%;
+        transform-origin: 100% 0%;
+        transform: scale(1.2, 1.2);
+      }
+      .dat-gui .dg.main .close-button {
+        left: 50%;
+        margin-left: -100px !important;
+        min-width: 0 !important;
+        width: 200px !important;
+        margin: 0 auto;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+      }
+      .about {
+        width: auto;
+        height: auto;
+        margin: 0;
+        left: 0;
+        right: 0;
+        top: 50%;
+        transform: translate(0%, -50%);
+      }
+      .about .privacy, .about .colofon {
+        width: auto;
+      }
+      .about .privacy {
+        white-space: nowrap;
+      }
+      .about .flex-if-mobile > * {
+        margin-right: 32px;
+      }
+      .about .footer {
+        max-width: 640px;
+      }
+    }
+    
+    @media screen 
+    and (max-width : 374px) {
+      .flex-if-not-narrow {
+        display: block;
+      }
+      .about p.colofon, .about div.privacy {
+        text-align: center;
+        margin: 0 auto 16px;
+      }
+      .about p.right {
+        margin-bottom: 0px;
+      }
+      .about .features {
+        margin-top: 24px;
+      }
+    }
+    
+    /*
+    .dg.ac {
+      z-index: 10 !important;  
+    }
+    */
     .dg .c::after {
       content: '';
       clear: both;
       display: table;
-    }
-    .dg.ac {
-      z-index: 10 !important;  
     }
     .dg.ac select {
       padding: 0;
@@ -271,16 +564,31 @@
       font-size: 12px;
       margin-top: -2px;
     }
+  
   </style>
   <header>
+    <img src="./assets/logo-128.png" width="64" height="64">
     <h1>Un-Colorblind</h1><h2>Sight Enhancer</h2>
   </header>
   <input type="text" class="clipboard" value="">
   <div class="tooltip"></div>
-  <button class="camera">
-    <img class="camera" src="./assets/camera.svg" width="48" height="48" alt="Camera">
-    <img class="no-camera" src="./assets/no-camera.svg" width="48" height="48" alt="Camera">
-  </button>
+  <div class="toolbar">
+    <button class="round file" title="Load Image...">
+      <img class="file" src="./assets/file.svg" width="48" height="48" alt="Select File">
+    </button>
+    <button class="round camera no-camera" title="Toggle Camera">
+      <img class="camera" src="./assets/camera.svg" width="48" height="48" alt="Camera On">
+      <img class="no-camera" src="./assets/no-camera.svg" width="48" height="48" alt="Camera Off">
+    </button>
+    <button class="round picking" title="Toggle Eye Dropper">
+      <img class="picking" src="./assets/pick.svg" width="48" height="48" alt="Pick Tool On">
+      <img class="no-picking" src="./assets/no-pick.svg" width="48" height="48" alt="Pick Tool Off">
+    </button>
+    <button class="round rainbow" title="Toggle Rainbow">
+      <img class="rainbow"    src="./assets/rainbow.svg" width="48" height="48" alt="Rainbow On">
+      <img class="no-rainbow" src="./assets/no-rainbow.svg" width="48" height="48" alt="Rainbow Off">
+    </button>
+  </div>
   <video playsinline></video>
   <div class="spinner">
     <div class="ring ring1 shadow"></div>
@@ -292,7 +600,9 @@
     <div class="ring ring4 shadow"></div>
     <div class="ring ring4"></div>
   </div>
-  <div class="hint"><img src="data:image/svg+xml;charset=utf-8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxNi4wLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+DQo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB3aWR0aD0iNDAyLjY2N3B4IiBoZWlnaHQ9IjQwNnB4IiB2aWV3Qm94PSIwIDAgNDAyLjY2NyA0MDYiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDQwMi42NjcgNDA2IiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzY1NjY2OSIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS1kYXNoYXJyYXk9IjEyLjA4NTEsMTIuMDg1MSIgZD0iTTM4OC4yMDgsMjguMTI1DQoJYzAtNi42MjgtNS4zNzMtMTItMTItMTJIMjYuNDU4Yy02LjYyNywwLTEyLDUuMzcyLTEyLDEydjM0OS43NWMwLDYuNjI3LDUuMzczLDEyLDEyLDEyaDM0OS43NWM2LjYyNywwLDEyLTUuMzczLDEyLTEyVjI4LjEyNXoiLz4NCjxwYXRoIG9wYWNpdHk9IjAuNCIgZD0iTTM4OC4yMDgsMjguMTI1YzAtNi42MjgtNS4zNzMtMTItMTItMTJIMjYuNDU4Yy02LjYyNywwLTEyLDUuMzcyLTEyLDEydjM0OS43NWMwLDYuNjI3LDUuMzczLDEyLDEyLDEyDQoJaDM0OS43NWM2LjYyNywwLDEyLTUuMzczLDEyLTEyVjI4LjEyNXoiLz4NCjxnPg0KCTxwYXRoIGZpbGw9IiM1NDU1NTciIGQ9Ik0xNDkuMzQyLDI1Mi44OGMwLTMzLjI1MywwLTY2LjUwNywwLTk5Ljc2YzAuMDk1LTAuNDM4LDAuMTc0LTAuODgxLDAuMjg4LTEuMzEzDQoJCWMxLjk1My03LjQxLDYuMzEzLTEyLjY4OSwxMy42MzgtMTUuMzA0YzEuMjIzLTAuNDM3LDIuNTAzLTAuNzE1LDMuNzU2LTEuMDY1YzE1LjY1OSwwLDMxLjMxOCwwLDQ2Ljk3OCwwDQoJCWMxLjQ4MSwwLjczNSwzLjExMiwxLjI3NSw0LjQxOCwyLjI0OWMyLjY2OCwxLjk5LDUuMzAyLDQuMDY5LDcuNjk5LDYuMzcxYzQuODk2LDQuNjk2LDkuNjM3LDkuNTUzLDE0LjQxNCwxNC4zNjgNCgkJYzEuODc5LDEuODk0LDMuNjU3LDMuODg3LDUuNTM4LDUuNzc3YzMuMDY2LDMuMDgxLDUuNzA5LDYuNDM4LDcuMjUzLDEwLjU1OGMwLDI2LjA0LDAsNTIuMDc5LDAsNzguMTE5DQoJCWMtMC4wOTUsMC40MzgtMC4xNzUsMC44OC0wLjI4NywxLjMxM2MtMS45NTMsNy40MS02LjMxMiwxMi42ODgtMTMuNjQsMTUuMzAzYy0xLjIyNCwwLjQzOC0yLjUwMiwwLjcxNS0zLjc1NiwxLjA2Ng0KCQljLTIyLjg3MywwLTQ1Ljc0NSwwLTY4LjYxOCwwYy0yLjgxMy0wLjY5MS01LjU1OC0xLjQ5OC04LjA0Ni0zLjEwM2MtMy42NzMtMi4zNjQtNi40MTgtNS40NzQtOC4wMzUtOS41MjENCgkJQzE1MC4yODksMjU2LjMwNSwxNDkuODY5LDI1NC41NywxNDkuMzQyLDI1Mi44OHogTTE1OS44OTQsMjAyLjg2MWMwLDE1LjMwMi0wLjAwNSwzMC42MDQsMC4wMTEsNDUuOTA3DQoJCWMwLjAwMSwwLjkwNCwwLjEzOCwxLjgxMiwwLjI1MiwyLjcxM2MwLjYxOSw0Ljg2Nyw1LjE4OSw4LjUzMywxMC4wMTksOC41MzFjMjAuNjY3LTAuMDA1LDQxLjMzMy0wLjAyMSw2Mi4wMDEsMC4wMQ0KCQljNS45ODYsMC4wMTEsMTAuNjA1LTQuNjE3LDEwLjYtMTAuNjc2Yy0wLjAxNC0xNi42NjYtMC4wMDQtMzMuMzMyLTAuMDA0LTQ5Ljk5N2MwLTUuNjI5LDAuMDYyLTExLjI1OS0wLjAyNS0xNi44ODYNCgkJYy0wLjA0Ny0zLjAyNC0wLjk1My0zLjg1NS0zLjM2OS00LjcyNmMtMS4yNzEtMC40NTctMi43MTctMC41NjgtNC4wODYtMC41ODJjLTYuMTA5LTAuMDU5LTEyLjIyNS0wLjAyMy0xOC4zMzYtMC4wMjUNCgkJYy0zLjEwNy0wLjAwMi01LjI5Ny0yLjIwOS01LjMzLTUuMzFjLTAuMDcyLTYuOTMxLTAuMTA0LTEzLjg2Mi0wLjI5NS0yMC43ODljLTAuMDY2LTIuNTM0LTEuMzA5LTUuMTc0LTUuMTI5LTUuMTEzDQoJCWMtMTEuOTU3LDAuMTktMjMuOTE4LDAuMDY3LTM1Ljg3OSwwLjA3MWMtNS44NTYsMC4wMDItMTAuNDAyLDQuNTU5LTEwLjQxNiwxMC40MzZDMTU5Ljg3LDE3MS45MDQsMTU5Ljg5NCwxODcuMzgzLDE1OS44OTQsMjAyLjg2MQ0KCQl6Ii8+DQoJPHBhdGggZmlsbD0iI0Y2RjlGRiIgZD0iTTE1OS44OTQsMjAyLjg2MWMwLDE1LjMwMi0wLjAwNSwzMC42MDQsMC4wMTEsNDUuOTA3YzAuMDAxLDAuOTA0LDAuMTM4LDEuODEyLDAuMjUyLDIuNzEzDQoJCWMwLjYxOSw0Ljg2Nyw1LjE4OSw4LjUzMywxMC4wMTksOC41MzFjMjAuNjY3LTAuMDA1LDQxLjMzMy0wLjAyMSw2Mi4wMDEsMC4wMWM1Ljk4NiwwLjAxMSwxMC42MDUtNC42MTcsMTAuNi0xMC42NzYNCgkJYy0wLjAxNC0xNi42NjYtMC4wMDQtMzMuMzMyLTAuMDA0LTQ5Ljk5N2MwLTUuNjI5LDAuMDYyLTExLjI1OS0wLjAyNS0xNi44ODZjLTAuMDQ3LTMuMDI0LTAuOTUzLTMuODU1LTMuMzY5LTQuNzI2DQoJCWMtMS4yNzEtMC40NTctMi43MTctMC41NjgtNC4wODYtMC41ODJjLTYuMTA5LTAuMDU5LTEyLjIyNS0wLjAyMy0xOC4zMzYtMC4wMjVjLTMuMTA3LTAuMDAyLTUuMjk3LTIuMjA5LTUuMzMtNS4zMQ0KCQljLTAuMDcyLTYuOTMxLTAuMTA0LTEzLjg2Mi0wLjI5NS0yMC43ODljLTAuMDY2LTIuNTM0LTEuMzA5LTUuMTc0LTUuMTI5LTUuMTEzYy0xMS45NTcsMC4xOS0yMy45MTgsMC4wNjctMzUuODc5LDAuMDcxDQoJCWMtNS44NTYsMC4wMDItMTAuNDAyLDQuNTU5LTEwLjQxNiwxMC40MzZDMTU5Ljg3LDE3MS45MDQsMTU5Ljg5NCwxODcuMzgzLDE1OS44OTQsMjAyLjg2MXoiLz4NCgk8cGF0aCBvcGFjaXR5PSIwLjUiIGZpbGw9IiM1NDU1NTciIGQ9Ik0yMDEuMzQ5LDIzOS40MTZjLTkuMTQ4LDAtMTguMjk3LDAuMDE0LTI3LjQ0NC0wLjAyM2MtMC43OTItMC4wMDItMS42NDgtMC4xODgtMi4zNjEtMC41MjUNCgkJYy0xLjU3OS0wLjc0OS0xLjc3MS0xLjc3MS0wLjkzNS0zLjQ1MWMxLjQ0NC0yLjg5NiwyLjc4Ny01Ljg1LDQuMjctOC43MjdjMS45OTgtMy44ODMsNC4xNjgtNy42Nyw3LjE3LTEwLjg4OQ0KCQljMS4wNDEtMS4xMTUsMi4wODQtMi40OTQsMy44NTgtMi4xOTVjMS4wNiwwLjE3OSwyLjI4MywwLjUzMywzLjAyMSwxLjI0YzEuNzE5LDEuNjQ2LDMuMTY4LDMuNTcsNC43NjMsNS4zNTMNCgkJYzEuNDQzLDEuNjEsMi44NjEsMy4xODgsNS4xNzEsMy43MTRjMS42NzIsMC4zODIsMi44NjQtMC4yMTEsMy45OTItMS4xOTNjMi43NzgtMi40Miw0LjAwNi01Ljc3Nyw1LjM0Mi05LjA1NQ0KCQljMS40MjktMy41MDEsMi43MjItNy4wNjEsNC4yNDItMTAuNTE4YzAuNjEyLTEuMzk1LDEuNTcyLTIuNjgxLDIuNTY1LTMuODUzYzAuOTk0LTEuMTcxLDIuNDMzLTEuMDgxLDMuNTYyLTAuMDMyDQoJCWMyLjAxOSwxLjg3MywzLjI4MSw0LjI3OCw0LjI3Niw2Ljc0OGMxLjgsNC40NTksMy40NTMsOC45ODcsNC45MzMsMTMuNTYyYzEuNTk3LDQuOTM5LDIuOTc2LDkuOTUzLDQuMzQ1LDE0Ljk2NQ0KCQljMC42OTQsMi41NTMtMS4wMDQsNS4wMS0zLjcyNCw0Ljk1MUMyMTkuMzg0LDIzOS4yOTgsMjEwLjM2NSwyMzkuNDE2LDIwMS4zNDksMjM5LjQxNnoiLz4NCgk8cGF0aCBvcGFjaXR5PSIwLjUiIGZpbGw9IiM1NDU1NTciIGQ9Ik0xODUuNzIyLDIwMi45OTVjLTUuOTc5LDAuMTU2LTEwLjUxMi00LjYzNi0xMC40ODgtMTAuNDY1DQoJCWMwLjAyMy01LjUzLDQuNDQzLTEwLjcyNiwxMS4xMjYtMTAuMzg2YzUuNTM2LDAuMjgxLDkuODcyLDQuNjcyLDkuOTEsMTAuNDYzQzE5Ni4zMDgsMTk4LjI4OSwxOTEuNzI4LDIwMy4yNDgsMTg1LjcyMiwyMDIuOTk1eiIvPg0KPC9nPg0KPC9zdmc+" alt=""></div>
-  <script src="build/index.bundle.js?12"></script>
+  <div class="regl"></div>
+  <div class="dat-gui"></div>
+  <div class="hint"><img src="./assets/dropfile.svg" alt=""></div>
+  <script src="build/index.bundle.js?15"></script>
 </body>
 </html>

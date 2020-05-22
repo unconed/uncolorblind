@@ -1,10 +1,12 @@
-const regl = require('regl')();
+const regl = require('regl')(document.querySelector('.regl'));
 
+const mat3 = require('gl-matrix/mat3');
 const vec3 = require('gl-matrix/vec3');
+const vec2 = require('gl-matrix/vec2');
 
 const {CORRECTION} = require('./lms');
 const {VECTORS} = require('./options');
-const {mountUI, mountScrubber} = require('./ui');
+const {mountUI, mountScrubber, mountPan} = require('./ui');
 const {mountLoader} = require('./file');
 const {openAbout} = require('./about');
 const {formatColor, testPattern} = require('./color');
@@ -14,6 +16,13 @@ const {getLayout, getAspect} = require('./layout');
 
 const SHADER = require('raw-loader!./shader.glsl').default;
 
+const isFirstTime = () => {
+  if (localStorage.getItem('firstTime')) return false;
+  localStorage.setItem('firstTime', 1);
+  return true;
+}
+
+// Shader props
 const props = {
   "plate": "assets/ishihara_9.png",
   "vision": "0",
@@ -33,15 +42,30 @@ const props = {
 };
 
 const state = {
+  // View matrix
+  matrix: mat3.create(),
+  
+  // 2D dither offset in screen space to keep pattern fixed when panning
+  offset: vec2.create(),
+  
+  // Picking state
+  picking: true,
   picked: null,
   hover: null,
+
+  // Bar transition state
+  transition: 1,
+
+  // Loaded image/texture
   image: {rgba: {data: [0, 0, 0, 255], width: 1, height: 1}, texture: regl.texture({shape: [1, 1]})},
 };
 
+// Bind state to layout
+const getCurrentLayout = () => getLayout(state.transition, state.image);
+
 // Convert screen coordinates to canvas UV
-const getUV = (e) => {
+const getUV = (clientX, clientY) => {
   let {innerWidth, innerHeight} = window;
-  let {clientX, clientY} = e;
 
   let u = clientX / innerWidth;
   let v = clientY / innerHeight;
@@ -52,7 +76,9 @@ const getUV = (e) => {
 // Pick color at UV coordinates
 const NO_PIXEL = [0, 0, 0, 0];
 const pickUV = (u, v) => {
-  let {projection, bar} = getLayout(state.image);
+  if (!state.picking) return [0, 0, 0, 0];
+  
+  let {projection, bar} = getCurrentLayout();
   let {rgba, texture: {width, height}} = state.image;
 
   // Pick test pattern
@@ -65,6 +91,7 @@ const pickUV = (u, v) => {
   let v3 = vec3.create();
   vec3.set(v3, u, v, 1);
   vec3.transformMat3(v3, v3, projection);
+  vec3.transformMat3(v3, v3, state.matrix);
   u = v3[0];
   v = v3[1];
 
@@ -124,20 +151,34 @@ const pickUV = (u, v) => {
 // Initialize UI and rendering
 const onLoad = () => {
   
+  // See, this is why you need declarative incrementalism
+  // This code is terrible.
+  
   // Spinner
   const spinner = document.querySelector('.spinner');
   const hint    = document.querySelector('.hint');
+  const tooltip = document.querySelector('.tooltip');
+
+  // Find action buttons
+  const cameraButton = document.querySelector('button.camera');
+  const pickingButton = document.querySelector('button.picking');
+  const fileButton = document.querySelector('button.file');
+  const rainbowButton = document.querySelector('button.rainbow');
 
   // URL loaders
   const {loadFileModal, loadTexture, loadVideo} = mountLoader(regl,
     (loading) => { toggleElement(spinner, loading); toggleElement(hint, false); },
     (image) => {
-    if (state.image && state.image.stop) state.image.stop();
-    state.image = image;
-  });
+      if (state.image && state.image.stop) state.image.stop();
+      state.image = image;
+
+      mat3.set(state.matrix, 1, 0, 0, 0, 1, 0, 0, 0, 1);
+      toggleElement(tooltip, false);
+      updateCamera(); 
+    }
+  );
 
   // Camera loading/unloading
-  const cameraButton = document.querySelector('button.camera');
   const loadCamera = () => getCamera().then(({video}) => { loadVideo(video); updateCamera(); });
   const unloadCamera = () => { loadTexture(props.plate); }
   const isCamera = () => !!state.image.update;
@@ -146,8 +187,37 @@ const onLoad = () => {
     else loadCamera();
     updateCamera();
   }
+
   const updateCamera = () => {
-    cameraButton.classList.toggle('no-camera', isCamera());
+    toggleClass(cameraButton, 'no-camera', !isCamera());
+  };
+
+  const toggleRainbow = () => {
+    props.rainbow = !props.rainbow;
+    toggleElement(tooltip, false);
+    updateLayout();
+  };
+
+  // Picking tool toggle
+  const togglePicking = () => { state.picking = !state.picking; updatePicking(); }
+
+  const canvas = document.querySelector('canvas');
+  const updatePicking = () => {
+    toggleClass(pickingButton, 'no-picking', !state.picking);
+    toggleClass(canvas, 'picking', state.picking);
+    toggleElement(tooltip, false);
+  };
+
+  // Bind action buttons
+  cameraButton.addEventListener('click', toggleCamera);
+  pickingButton.addEventListener('click', togglePicking);
+  fileButton.addEventListener('click', loadFileModal);
+  rainbowButton.addEventListener('click', toggleRainbow);
+
+  // Stylesheet selector
+  const updateLayout = () => {
+    toggleClass(rainbowButton, 'no-rainbow', !props.rainbow);
+    toggleClass(document.body, 'with-bar', props.rainbow);
   };
 
   // Clipboard
@@ -163,12 +233,17 @@ const onLoad = () => {
     document.execCommand("copy");
   }
 
-  // These need to be on props for dat.gui
-  props.loadFile   = loadFileModal;
-  props.loadCamera = toggleCamera;
-  props.openHelp   = openAbout;
+  // These need to be on props for dat.gui buttons
+  props.loadFile      = loadFileModal;
+  props.loadCamera    = toggleCamera;
+  props.togglePicking = togglePicking;
+  props.openAbout     = openAbout;
 
-  mountUI(props, () => loadTexture(props.plate));
+  mountUI(props,
+    () => loadTexture(props.plate),
+    () => updateLayout(),
+  );
+  updatePicking();
 
   // Load image via URL (only works if it has CORS headers)
   const url = parseLocation(location.href);
@@ -176,12 +251,21 @@ const onLoad = () => {
   else loadTexture(props.plate);
 
   // Picker for spectrum
-  const getBarUV = (e) => {
-    let [u, v] = getUV(e);
-    const {bar} = getLayout(state.image);
+  const getBarUV = (clientX, clientY) => {
+    let [u, v] = getUV(clientX, clientY);
+    const {bar} = getCurrentLayout();
     return [u, (v - bar[0]) * bar[1]];
   };
 
+  // Mount pan-and-zoom
+  mountPan(
+    () => getCurrentLayout().projection,
+    () => state.matrix,
+    (matrix) => mat3.multiply(state.matrix, matrix, state.matrix),
+    (x, y) => vec2.add(state.offset, state.offset, [x, -y])
+  );
+
+  // Mount color picker
   mountScrubber(
     getUV, getBarUV, pickUV,
     (hover) => state.hover = hover,
@@ -189,12 +273,38 @@ const onLoad = () => {
     (highlight) => props.highlight = highlight
   );
 
-  regl.frame(({time}) => {
+  let last = null;
+  let time = 0;
+  regl.frame(({time: clock}) => {
+    clock = clock % 320;
+
+    // Resumable clock
+    let delta = 0;
+    if (last) {
+      delta = clock - last;
+      if (props.moving) time += delta;
+    }
+    last = clock;
+
+    // .5s transition
+    const step = 2 * delta;
+    if (state.transition < +props.rainbow) state.transition += step;
+    if (state.transition > +props.rainbow) state.transition -= step;
+    state.transition = Math.max(0, Math.min(1, state.transition));
+
+    // Upload video data
     if (state.image.update) state.image.update();
 
     regl.clear({color: [0, 0, 0, 0]})
-    drawImage({time: props.moving ? time : 0, layout: getLayout(state.image)})
+    drawImage({
+      time,
+      layout: getCurrentLayout(),
+      aspect: getAspect(),
+    })
   });
+  
+  // First time splash
+  if (isFirstTime()) openAbout();
 };
 
 const drawImage = regl({
@@ -221,7 +331,7 @@ const drawImage = regl({
     idpr:       (context) => 1 / context.pixelRatio,
 
     background: () => props.background,
-    rainbow:    () => props.rainbow   ?  1 : 0,
+    rainbow:    () => state.transition,
     
     exclude:    () => props.exclude   ?  1 : 0,
     invert:     () => props.invert    ? -1 : 1,
@@ -231,16 +341,19 @@ const drawImage = regl({
     vision:     () => CORRECTION[+props.vision] || CORRECTION[0],
     direction:  () => VECTORS[props.direction],
 
-    highlight:  () => (props.rainbow && state.hover != null) ? state.hover : props.highlight,
+    highlight:  () => (state.transition && state.hover != null) ? state.hover : props.highlight,
     range:      () => props.range / 2,
     irange:     () => 2 / props.range,
     hardness:   () => (props.hardness + 1) / props.range,
     saturation: () => 1.0 / props.saturation,
 
+    offset:     () => state.offset,
+    view:       () => state.matrix,
+
     projection: (_, props) => props.layout.projection,
     bar:        (_, props) => props.layout.bar,
     pixel:      (_, props) => props.layout.pixel,
-    grid:       () => getAspect(),
+    grid:       (_, props) => props.aspect,
   },
   
   depth: {
@@ -254,5 +367,8 @@ const drawImage = regl({
 
 // Toggle DOM element visibility
 const toggleElement = (el, vis) => el.style.display = vis ? 'block' : 'none';
+
+// Toggle DOM class
+const toggleClass   = (el, className, v) => el.classList.toggle(className, v);
 
 window.onload = onLoad;

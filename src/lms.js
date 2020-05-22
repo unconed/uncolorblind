@@ -1,6 +1,6 @@
 const mat3 = require('gl-matrix/mat3');
 
-// LMS-space Color Correction Matrices
+// LMS-space color correction matrices
 
 const RGB_TO_LMS = mat3.create()
 mat3.set(RGB_TO_LMS,

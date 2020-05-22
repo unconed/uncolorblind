@@ -1,11 +1,16 @@
 const dat = require('dat.gui');
 const {lookupColor, describeColor, formatColor, rgbToNormedHue, toLinear, toSRGB} = require('./color');
 
-const lerp = (a, b, t) => a * (1 - t) + b * t;
 const {DAT, PLATES, MODES, PATTERNS, DIRECTIONS} = require('./options');
+const {mountPan} = require('./pan');
 
-const mountUI = (props, onChangeImage) => {
-  let gui = new dat.GUI({ load: DAT, preset: "9 RGB" });
+const lerp = (a, b, t) => a * (1 - t) + b * t;
+
+const mountUI = (props, onChangeImage, onChangeRainbow) => {
+  
+  // Initialize dat.GUI
+  let gui = new dat.GUI({ load: DAT, preset: "9 RGB", autoPlace: false });
+  document.querySelector('.dat-gui').appendChild(gui.domElement);
 
   gui.remember(props);
   
@@ -13,7 +18,6 @@ const mountUI = (props, onChangeImage) => {
   f1.add(props, 'plate', PLATES).name('Image').onChange(onChangeImage);
   f1.add(props, 'vision', MODES).name('Vision');
   f1.add(props, 'active').name('Apply Filter');
-  f1.add(props, 'rainbow').name('Show Rainbow Map');
 
   let f2 = gui.addFolder('Settings');
   f2.add(props, 'moving').name('Animate');
@@ -29,36 +33,60 @@ const mountUI = (props, onChangeImage) => {
   f3.add(props, 'hardness').min(1).max(5).step(1/100).name('Hardness');
   f3.add(props, 'saturation').min(1/32.0).max(1).step(1/100).name('Saturation');
   f3.add(props, 'exclude').name('Negative');
+  
+  gui.add(props, 'openAbout').name('ℹ️ Info');
 
-  gui.add(props, 'loadFile').name('Load Image…');
-  gui.add(props, 'openHelp').name('About');
+  onChangeImage();
+  onChangeRainbow();
 
-  f2.open();
+  if (window.innerWidth < 768) gui.close();
 
-  const camera = document.querySelector('button.camera');
-  camera.addEventListener('click', props.loadCamera);
+  // Fix dat-gui sizing
+  document.querySelector('.dat-gui').style.display = 'block';
+  document.querySelector('.dat-gui .dg.main').style.minWidth = '100%';
+  document.querySelector('.dat-gui .close-button').style.minWidth = '100%';
 }
 
 const mountScrubber = (getUV, getBarUV, pickUV, setHover, setColor, setHue) => {
 
   const tooltip = document.querySelector('.tooltip');
   const canvas = document.querySelector('canvas');
+
+  const onTouch = (e) => {
+    const {changedTouches} = e;
+    const {clientX, clientY} = changedTouches[0];
+    onDown(clientX, clientY);
+    e.preventDefault();
+  }
   
-  canvas.addEventListener('mousemove', (e) => {
+  const onTouchStart = (e) => onTouch(e);
+  const onTouchMove = (e) => onTouch(e);
+  
+  const onMouseMove = (e) => {
+    let {clientX, clientY} = e;
+    return onHover(clientX, clientY);
+  }
+  
+  const onMouseDown = (e) => {
+    let {clientX, clientY} = e;
+    return onDown(clientX, clientY);
+  }
+  
+  const onHover = (clientX, clientY) => {
     {
       // Scrub on bar
-      const [u, v] = getBarUV(e);
+      const [u, v] = getBarUV(clientX, clientY);
       const h = (((u - .5) * 1.1 + .5) + 2) % 1;
       const hover = (v > 0.0 && v < 1.0) ? h : null;
       setHover(hover);
     }
 
-    const [u, v] = getUV(e);
+    const [u, v] = getUV(clientX, clientY);
 
     // Move tooltip beside cursor
     const bump = u > .5 ? -10 : 10;
-    tooltip.style.left = `${e.clientX + bump}px`;
-    tooltip.style.top  = `${e.clientY}px`;
+    tooltip.style.left = `${clientX + bump}px`;
+    tooltip.style.top  = `${clientY}px`;
   
     // Luminosity for text contrast
     const [r, g, b, a] = pickUV(u, v);
@@ -90,12 +118,12 @@ const mountScrubber = (getUV, getBarUV, pickUV, setHover, setColor, setHue) => {
         tooltip.style.transform = `translate(${flipX}, ${flipY})`;
       }
     }
-    if (html && tooltip.innerHTML !== html) tooltip.innerHTML = html;
-    tooltip.style.display = 'block'; //html != '' ? 'block' : 'none';
-  });
-
-  canvas.addEventListener('mousedown', (e) => {
-    const [u, v] = getUV(e);
+    if (tooltip.innerHTML !== html) tooltip.innerHTML = html;
+    tooltip.style.display = html != '' ? 'block' : 'none';
+  };
+  
+  const onDown = (clientX, clientY) => {
+    const [u, v] = getUV(clientX, clientY);
     const float = pickUV(u, v);
     const [r, g, b, a] = float;
 
@@ -104,8 +132,14 @@ const mountScrubber = (getUV, getBarUV, pickUV, setHover, setColor, setHue) => {
       setColor(float);
       setHue(h);
     }
-  });
+  };
+
+  canvas.addEventListener('mousemove', onMouseMove);
+  canvas.addEventListener('mousedown', onMouseDown);
+
+  canvas.addEventListener('touchstart', onTouchStart);
+  canvas.addEventListener('touchmove', onTouchMove);
 
 }
 
-module.exports = {mountUI, mountScrubber};
+module.exports = {mountUI, mountScrubber, mountPan};
