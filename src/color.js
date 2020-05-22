@@ -9,7 +9,8 @@ const toLinear = (x) => Math.pow(x, 2.2);
 
 const GRAYS = [
   ['Black', 0],
-  ['Dark Gray',  .1],
+  ['Dark Gray',  .05],
+  ['Gray', 0.5],
   ['Light Gray', .9],
   ['White', 1],
 ];
@@ -20,9 +21,10 @@ const HUES = [
   ['Yellow', 0.12],
   ['Green', 0.23],
   ['Blue', 0.441],
-  ['Indigo', 0.629],
-  ['Violet', 0.68],
-  ['Pink', 0.805],
+  ['Blue', 0.666],
+  ['Indigo', 0.668],
+  ['Violet', 0.71],
+  ['Pink', 0.78],
   ['Red', 0.95],
 ];
 
@@ -109,7 +111,7 @@ const lookupColor = (() => {
 // Describe a color in natural terms (e.g. light vibrant indigo)
 const describeColor = ((float) => {
   const [r, g, b] = float;
-  const [h, s, l] = rgbToHSL([toLinear(r), toLinear(g), toLinear(b)]);
+  let [h, s, l] = rgbToHSL([toLinear(r), toLinear(g), toLinear(b)]);
 
   let [ng] = findMin(GRAYS, ([n, gry]) => Math.abs(gry - l));
   let [nh] = findMin(HUES,  ([n, hue]) => hue > h ? Infinity : h - hue);
@@ -121,6 +123,7 @@ const describeColor = ((float) => {
   if (nl == 'Pastel' && ns == '') { [nl, ns] = ['Light', nl]; }
   if (nl == 'Pastel' && ns == 'Vibrant') { [nl, ns] = ['', nl]; }
   if (nl == 'Pastel' && ns == 'Muted') { [nl, ns] = [ns, nl]; }
+  if (ng == 'Black' || ng == 'White') s = 0;
 
   if (s < 0.1) return ng;
   return [nl, ns, nh].filter(x => x != '').join(' ');
@@ -153,7 +156,7 @@ const testPattern = (u, v) => {
   }
 
   if (y3 >= 0.0 && y3 < 1.0) {
-    let f = sat(Math.cos(hue * 3.14159 * 24.0) * -.2 + .9);
+    let f = sat(Math.cos(hue * 3.14159 * 24.0) * -.2 + .85);
     r = lerp(r, 1.0 - y3, f);
     g = lerp(g, 1.0 - y3, f);
     b = lerp(b, 1.0 - y3, f);
@@ -196,4 +199,10 @@ const rgbToHSL = ([r, g, b]) => {
 
 const rgbToNormedHue = ([r, g, b]) => rgbToHSL([toLinear(r), toLinear(g), toLinear(b)])[0];
 
-module.exports = {lookupColor, describeColor, testPattern, rgbToNormedHue};
+const formatColor = ([r, g, b, a]) => {
+  const f = x => Math.round(Math.max(0, Math.min(1, x)) * 255);
+  if (1 - a < 1e-3) return `rgb(${f(r)}, ${f(g)}, ${f(b)})`;
+  else return `rgba(${f(r)}, ${f(g)}, ${f(b)}, ${a.toFixed(3).replace(/\.?0+$/, '')})`;
+}
+
+module.exports = {lookupColor, describeColor, testPattern, rgbToNormedHue, formatColor, toLinear, toSRGB};

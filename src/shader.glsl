@@ -81,12 +81,15 @@ uniform float saturation;
 #ifdef BACKGROUND_GRID
 // Background level (grayscale)
 uniform float background;
+
+// Grid size in UV
+uniform vec2 grid;
 #endif
 
 #ifdef TEST_PATTERN
 // Show rainbow test pattern (0/1)
 uniform float rainbow;
-uniform vec2 pixelScale;
+uniform vec2 pixel;
 
 // Y-layout for bottom bar, [y, bar height]
 uniform vec2 bar;
@@ -260,7 +263,7 @@ vec3 applyDither(vec3 rgb, vec3 hsv, float dither) {
 #ifdef BACKGROUND_GRID
 // Background grayscale pattern
 float gridPattern(vec2 uv) {
-  vec2 uvGrid = fract(uv * GRID);
+  vec2 uvGrid = fract(uv * grid * GRID);
   return mix(background, band(uvGrid.x) * band(uvGrid.y) * 0.5 + 0.5, LEVEL);
 }
 #endif
@@ -295,17 +298,17 @@ vec4 testPattern(vec4 sample, vec2 uv) {
   }
   if (y3 >= 0.0 && y3 < 1.0) {
     sample.rgb = toLinear(sample.rgb);
-    sample.rgb = mix(sample.rgb, vec3(1.0 - y3), sat(cos(hue * 3.14159 * 24.0) * -.2 + .9));
+    sample.rgb = mix(sample.rgb, vec3(1.0 - y3), sat(cos(hue * 3.14159 * 24.0) * -.2 + .85));
   }
   
   if (fill > 0.5) {
     // Mark primary and secondary colors
     float hueNotch = abs(fract(hue * 6.0 - 0.5) - 0.5);
     float y4 = uv.y;
-    if (y4 > 0.0 && y4 < 0.8 && hueNotch < pixelScale.x * 6.0) {
+    if (y4 > 0.0 && y4 < 0.8 && hueNotch < pixel.x * 6.0) {
       sample.rgb = mix(sample.rgb, vec3(1.0), 0.1); 
     }
-    else if (y4 > 0.0 && y4 < 0.8 && hueNotch < pixelScale.x * 12.0) {
+    else if (y4 > 0.0 && y4 < 0.8 && hueNotch < pixel.x * 12.0) {
       sample.rgb = mix(sample.rgb, vec3(0.0), 0.1); 
     }
     sample.rgb = toSRGB(sample.rgb);
@@ -317,7 +320,7 @@ vec4 testPattern(vec4 sample, vec2 uv) {
 
 ////////////////////////////////////////////////////////////
 
-bool notInBounds(vec2 uv) { return uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0; }
+bool notInBounds(vec2 uv) { return uv.y < 0.0 || uv.y > 1.0 || uv.x < 0.0 || uv.x > 1.0; }
 vec4 sampleWithBorder(sampler2D texture, vec2 uv, vec4 border) {
   if (notInBounds(uv)) return border;
   return texture2D(texture, uv);

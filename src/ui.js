@@ -1,6 +1,7 @@
 const dat = require('dat.gui');
-const {lookupColor, describeColor, rgbToNormedHue} = require('./color');
+const {lookupColor, describeColor, formatColor, rgbToNormedHue, toLinear, toSRGB} = require('./color');
 
+const lerp = (a, b, t) => a * (1 - t) + b * t;
 const {DAT, PLATES, MODES, PATTERNS, DIRECTIONS} = require('./options');
 
 const mountUI = (props, onChangeImage) => {
@@ -33,9 +34,12 @@ const mountUI = (props, onChangeImage) => {
   gui.add(props, 'openHelp').name('About');
 
   f2.open();
+
+  const camera = document.querySelector('button.camera');
+  camera.addEventListener('click', props.loadCamera);
 }
 
-const mountScrubber = (getUV, getBarUV, pickUV, setHover, setClick) => {
+const mountScrubber = (getUV, getBarUV, pickUV, setHover, setColor, setHue) => {
 
   const tooltip = document.querySelector('.tooltip');
   const canvas = document.querySelector('canvas');
@@ -58,36 +62,47 @@ const mountScrubber = (getUV, getBarUV, pickUV, setHover, setClick) => {
   
     // Luminosity for text contrast
     const [r, g, b, a] = pickUV(u, v);
-    const lum = Math.sqrt(r*r * 0.212 + g*g * 0.715 + b*b * 0.073);
+    const lum = Math.sqrt(toLinear(r) * 0.212 + toLinear(g) * 0.615 + toLinear(b) * 0.173);
 
     // If opaque
     let html = '';
     if (a > 0.2) {
-      const float = [r, g, b];
+      const float = [r, g, b, a];
       const simple = describeColor(float);
       const color  = lookupColor(float);
+      const css    = formatColor(float);
 
       if (color) {
-        html = "<span>" + color.name + "<br /><small><em>" + simple + "</small></em></span>";
-        tooltip.style.background = `rgb(${r*255},${g*255},${b*255})`;
-        tooltip.style.color = lum > .65 ? '#000' : '#fff';
+        const light = lum > .6;
+        const blend = x => toSRGB(lerp(toLinear(x), light, .75));
+        const tint = formatColor([blend(r), blend(g), blend(b), 1]);
 
+        html = `
+        ${color.name}<br />
+        <small><em>${simple}</small></em><br />
+        <code>${css}</code>`;
+        tooltip.style.background = `rgb(${r*255},${g*255},${b*255})`;
+        tooltip.style.color = light ? '#000' : '#fff';
+        tooltip.style.textShadow = light ? null : `0 1px 2px ${tint}, 0 2px 5px ${tint}`;
+                
         const flipX = u > .5 ? '-100%' : '0';
         const flipY = v > .5 ? '-100%' : '0';
         tooltip.style.transform = `translate(${flipX}, ${flipY})`;
       }
     }
-    if (tooltip.innerHTML !== html) tooltip.innerHTML = html;
-    tooltip.style.display = html != '' ? 'block' : 'none';
+    if (html && tooltip.innerHTML !== html) tooltip.innerHTML = html;
+    tooltip.style.display = 'block'; //html != '' ? 'block' : 'none';
   });
 
   canvas.addEventListener('mousedown', (e) => {
     const [u, v] = getUV(e);
-    const [r, g, b, a] = pickUV(u, v);
+    const float = pickUV(u, v);
+    const [r, g, b, a] = float;
 
     if (a > 0.2) {
-      const h = rgbToNormedHue([r, g, b]);
-      setClick(h);
+      const h = rgbToNormedHue(float);
+      setColor(float);
+      setHue(h);
     }
   });
 

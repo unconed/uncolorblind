@@ -1,21 +1,28 @@
+// Open static dialog
 const openAbout = () => {
+
+  // Make div wrapper
   const div = document.createElement('div');
   div.className = 'about';
+
+  // Static HTML template
   div.innerHTML = `
   <h1>UncolorBlind</h1>
   <p>Enjoy this set of virtual<br /><b>un-color blindness goggles</b>.</p>
   
   <p><b>Drag and drop</b> an image to view it,<br />or use <b>your camera</b> to filter video live.</p>
+  <p>Click to <b>shift the highlighted color tint</b>.<br />The <b>CSS color code</b> is copied to the clipboard.</p>
   
   <p>Created by <a href="https://acko.net/" target="_blank">Steven Wittens</a><br /><small><a href="https://github.com/unconed/uncolorblind" target="_blank">Source code</a></small></p>
   
   <p class="button"><button>Close</button></p>
 
-  <p><small><em>Your privacy is respected.<br />No data is uploaded to the cloud.</em></small></p>
+  <p class="privacy"><small><em>Your privacy is respected.<br />No data is uploaded to the cloud.</em></small></p>
   `;
 
   document.body.appendChild(div);
-  
+
+  // Handle close events on canvas and button
   const canvas = document.querySelector('canvas');
   const button = document.querySelector('.about button');
   

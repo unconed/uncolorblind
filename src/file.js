@@ -2,64 +2,123 @@ const resl = require('resl');
 const selectFile = require('file-select');
 const dragDrop = require('drag-drop');
 
-const hideFileHint = () => document.querySelector('.hint').style.display = 'none';
+let canvas = null;
+const getCanvas = (width, height) => {
+  const c = canvas || document.createElement('canvas');
+  if (!canvas) canvas = c;
+
+  if (c.width  != width) c.width = width;
+  if (c.height != height) c.height = height;
+  return c;
+}
 
 const toRGBA = (image) => {
-  const {width, height} = image;
+  let {width, height, videoWidth, videoHeight} = image;
+  width  = width  || videoWidth;
+  height = height || videoHeight;
 
-  const c = document.createElement('canvas');
-  c.width  = width;
-  c.height = height;
-
+  const c = getCanvas(width, height);
   const ctx = c.getContext('2d');
   ctx.drawImage(image, 0, 0);
 
-  const data = ctx.getImageData(0, 0, width, height);
+  try {
+    const data = ctx.getImageData(0, 0, c.width, c.height);
+    return data;
+  } catch (e) {
+    return {data: [], width, height};
+  }
   return data;
 }
 
-const mountLoader = (regl, setTexture) => {
+const mountLoader = (regl, setLoading, setTexture) => {
   
   const CACHE = {};
   let loaded = null;
 
-  let loadTexture = (url) => {
+  const makeVideoTexture = (video) => {
+    let texture;
+    const update = () => {
+      const data = toRGBA(video);
+      if (data.width && data.height) texture.subimage(data);
+      self.rgba = data;
+    };
+    
+    const stop = () => {
+      const stream = video.srcObject;
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      video.srcObject = null;
+    };
 
-    if (loaded == url) return;
-    loaded = url;
-
-    const makeTexture = (image) => ({
-      rgba: toRGBA(image),
-      texture: regl.texture({
-        data: image,
+    return self = {
+      update,
+      stop,
+      rgba: toRGBA(video),
+      texture: texture = regl.texture({
+        data: video,
         mag: 'linear',
         min: 'linear',
-        premultiplyAlpha: true
       }),
+    };
+  };
+  
+
+  const makeImageTexture = (image) => ({
+    rgba: toRGBA(image),
+    texture: regl.texture({
+      data: image,
+      mag: 'linear',
+      min: 'linear',
+      premultiplyAlpha: true
+    }),
+  });
+
+  const loadTexture = (src) => {
+    if (loaded == src) return;
+    loaded = src;
+
+    if (CACHE[src]) return setTexture(CACHE[src]);
+
+    setLoading(true);
+    return loadImageURL(src, (t) => {
+      setLoading(false);
+      CACHE[src] = t;
     });
+  }
 
-    if (CACHE[url]) return setTexture(CACHE[url]);
+  const loadVideo = video => {
+    if (loaded == video) return;
+    loaded = video;
 
+    setTexture(makeVideoTexture(video));
+  }
+
+  const loadImageURL = (url, f) => {
     resl({
       manifest: {
         texture: {
           type: 'image',
           src: url,
-          parser: (data) => makeTexture(data),
+          parser: (data) => makeImageTexture(data),
         }
       },
       onDone: ({texture: t}) => {
-        hideFileHint();
-        setTexture(CACHE[url] = t);
+        setTexture(t);
+        f && f(t);
       },
       onError: () => {
         loadTexture('./assets/errorfile.svg');
       },
     });
-  }
+  };
 
-  let loadFileModal = () => selectFile().then(loadFile);
-  let loadFile = (file) => {
+  const loadFileModal = () => selectFile({
+    multiple: false,
+    accept: 'image/*',
+  }).then(loadFile);
+
+  const loadFile = (file) => {
     if (!file) return;
 
     const res = new Response(file);
@@ -69,11 +128,15 @@ const mountLoader = (regl, setTexture) => {
     });
   }
 
-  dragDrop('body', (files) => {
-    if (files[0]) loadFile(files[0]);
+  const showHint = (b) => document.querySelector('.hint').style.display = b ? 'block' : 'none';
+  dragDrop('body', {
+    onDrop: (files) => files[0] && loadFile(files[0]),
+    onDragEnter: () => showHint(true),
+    onDragOver:  () => showHint(true),
+    onDragLeave: () => showHint(false),
   });
 
-  return {loadFile, loadFileModal, loadTexture};
+  return {loadFile, loadFileModal, loadTexture, loadVideo};
 }
 
 module.exports = {mountLoader};

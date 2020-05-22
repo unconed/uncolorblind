@@ -14,7 +14,7 @@ const DAT = {
         "invert": false,
         "background": 0,
         "highlight": 0.2916666666666667,
-        "range": 0.59,
+        "range": 0.51,
         "hardness": 2,
         "saturation": 0.5,
         "exclude": false
@@ -31,7 +31,7 @@ const DAT = {
         "invert": false,
         "background": 0,
         "highlight": 0.2916666666666667,
-        "range": 0.59,
+        "range": 0.51,
         "hardness": 2,
         "exclude": false
       }
