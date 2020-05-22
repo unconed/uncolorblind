@@ -39,6 +39,9 @@ const mountLoader = (regl, setLoading, setTexture) => {
     let texture;
     const update = () => {
       const data = toRGBA(video);
+      if (texture.width !== data.width || texture.height !== data.height) {
+        texture({width: data.width, height: data.height});
+      }
       if (data.width && data.height) texture.subimage(data);
       self.rgba = data;
     };

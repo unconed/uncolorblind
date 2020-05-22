@@ -123,6 +123,24 @@ const DAT = {
         "exclude": false
       }
     },
+    "Stalenhag Deuteranope": {
+      "0": {
+        "plate": "assets/stalenhag.jpg",
+        "vision": "1",
+        "active": true,
+        "moving": true,
+        "pattern": "1",
+        "direction": 1,
+        "intensity": 0.78,
+        "invert": false,
+        "background": 0,
+        "highlight": 0.002777777777777778,
+        "range": 0.45,
+        "hardness": 2,
+        "saturation": 0.5,
+        "exclude": false
+      },
+    },
     "I23 Protanope": {
       "0": {
         "plate": "assets/ishihara_23.png",
@@ -139,18 +157,18 @@ const DAT = {
         "hardness": 4.46,
         "saturation": 0.1,
         "exclude": false
-      },
+      }
     },
   },
   "folders": {
     "Scenario": {
       "preset": "Default",
-      "closed": true,
+      "closed": false,
       "folders": {}
     },
     "Settings": {
       "preset": "Default",
-      "closed": true,
+      "closed": false,
       "folders": {}
     },
     "Custom Filter": {
@@ -159,7 +177,7 @@ const DAT = {
       "folders": {}
     }
   },
-  "preset": "I9 RGB"
+  "preset": "Stalenhag"
 };
 
 const PLATES = {
@@ -169,6 +187,7 @@ const PLATES = {
   'PAL Test Card': 'assets/pal.png',
   'COVID-19 FT': 'assets/covid19.jpg',
   'Monet': 'assets/monet1.jpg',
+  'Stålenhag': 'assets/stalenhag.jpg',
   'Custom': '',
 };
 

@@ -39,7 +39,7 @@ const mountUI = (props, onChangeImage, onChangeRainbow) => {
   onChangeImage();
   onChangeRainbow();
 
-  if (window.innerWidth < 768) gui.close();
+  if (Math.min(window.innerWidth, window.innerHeight) < 768) gui.close();
 
   // Fix dat-gui sizing
   document.querySelector('.dat-gui').style.display = 'block';

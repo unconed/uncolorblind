@@ -1,5 +1,10 @@
 // Get camera media stream using a canvas to buffer it
 const getCamera = () => {
+  
+  navigator.mediaDevices.ondevicechange = () => {
+    navigator.mediaDevices.enumerateDevices().then((devices) => console.log('device change', devices));
+  }
+  
   return navigator.mediaDevices.getUserMedia({
     video: {
       width: { ideal: 1280 },

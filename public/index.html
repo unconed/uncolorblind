@@ -1,8 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>UncolorBlind</title>
+  <title>Un-Colorblind</title>
+
+  <meta name="og:title"            content="Un-Colorblind">
+  <meta name="twitter:title"       content="Un-Colorblind">
+
+  <meta name="description"         content="See the missing colors in images and video, using adaptive animated patterns.">
+  <meta name="og:description"      content="See the missing colors in images and video, using adaptive animated patterns.">
+  <meta name="twitter:description" content="See the missing colors in images and video, using adaptive animated patterns.">
+
+  <meta name="og:type"             content="website">
+  <meta name="og:image"            content="https://unblind.tech/assets/cover.jpg">
+  <meta name="twitter:card"        content="summary">
+  <meta name="twitter:creator"     content="Steven Wittens">
+
+  <meta name="keywords" content="color blindness, daltonism, protanopia, glsl, shader, webgl, regl, barber pole">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#58b">
+  <meta name="apple-mobile-web-app-title" content="Un-Colorblind">
+  <link rel="apple-touch-icon" href="/seo/icon-72.png" sizes="72x72">
+  <link rel="apple-touch-icon" href="/seo/icon-96.png" sizes="96x96">
+  <link rel="apple-touch-icon" href="/seo/icon-128.png" sizes="128x128">
+  <link rel="apple-touch-icon" href="/seo/icon-144.png" sizes="144x144">
+  <link rel="apple-touch-icon" href="/seo/icon-152.png" sizes="152x152">
+  <link rel="apple-touch-icon" href="/seo/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/seo/icon-384.png" sizes="384x384">
+  <link rel="apple-touch-icon" href="/seo/icon-512.png" sizes="512x512">
+  <link rel="shortcut icon" sizes="128x128" href="/seo/icon-128.png">
+
   <meta name="viewport" content="initial-scale=1, maximum-scale=1">
   <script type="text/javascript" src="https://acko.net/fonts/fonts.js"></script>
 </head>
@@ -282,12 +310,20 @@
       animation-iteration-count: infinite;
       animation-name: spin;
       animation-duration: 2s;
-      border-bottom: 4px solid rgba(128, 128, 128, 1)
-      animation-delay: -2.1s;
+      border-bottom: 4px solid rgba(128, 128, 128, 1);
+    }
+    .spinner :not(.shadow).ring {
+      animation-delay: -2.05s;
+    }
+    .spinner :not(.shadow).ring.opposite {
+      animation-delay: -1.05s;
     }
     .spinner .shadow.ring {
       border-bottom: 4px solid rgba(192, 192, 192, 1);
-      animation-delay: -1.9s;
+      animation-delay: -1.95s;
+    }
+    .spinner .shadow.ring.opposite {
+      animation-delay: -0.95s;
     }
     .spinner .ring1 {
       width: 64px;
@@ -395,6 +431,10 @@
       .dat-gui {
         transform-origin: 100% 0%;
         transform: scale(1.5, 1.5);
+      }
+      header {
+        top: auto;
+        bottom: 100px;
       }
     }
 
@@ -592,18 +632,18 @@
   </div>
   <video playsinline></video>
   <div class="spinner">
-    <div class="ring ring1 shadow"></div>
-    <div class="ring ring1"></div>
+    <div class="ring ring1 shadow opposite"></div>
+    <div class="ring ring1 opposite"></div>
     <div class="ring ring2 shadow"></div>
     <div class="ring ring2"></div>
-    <div class="ring ring3 shadow"></div>
-    <div class="ring ring3"></div>
+    <div class="ring ring3 shadow opposite"></div>
+    <div class="ring ring3 opposite"></div>
     <div class="ring ring4 shadow"></div>
     <div class="ring ring4"></div>
   </div>
   <div class="regl"></div>
   <div class="dat-gui"></div>
   <div class="hint"><img src="./assets/dropfile.svg" alt=""></div>
-  <script src="build/index.bundle.js?16"></script>
+  <script src="build/index.bundle.js?21"></script>
 </body>
 </html>
