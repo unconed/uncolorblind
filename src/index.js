@@ -284,7 +284,7 @@ const onLoad = () => {
     let delta = 0;
     if (last) {
       delta = clock - last;
-      if (props.moving) time += delta;
+      if (delta > 0 && props.moving) time += delta;
     }
     last = clock;
 
