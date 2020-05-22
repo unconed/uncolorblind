@@ -1,10 +1,6 @@
 # UncolorBlind
 
-## Sight Enhancer
-
-By [Steven Wittens](https://acko.net/).
-
-**UncolorBlind** is a web app that shows color in ways the color-blind can easily see.
+**UncolorBlind** is a web app that shows color in ways the color-blind can see.
 
 It is based on a [single GLSL shader](.), which implements the color dithering with a few variants and parameters.
 
@@ -19,3 +15,10 @@ It is based on a [single GLSL shader](.), which implements the color dithering w
 - Run `yarn install`
 - Run `yarn run dev`
 - Run a local webserver such as `updog` in the `public`.
+
+### License / Credit
+
+Code is [MIT licensed](LICENSE.md).
+
+By [Steven Wittens](https://acko.net/).
+
