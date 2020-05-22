@@ -225,14 +225,13 @@ const onLoad = () => {
     const {picked} = state;
     if (!picked) return;
 
-    const el = document.querySelector('input.clipboard');
-    if (!el) return;
+    const clipboard = document.querySelector('input.clipboard');
+    if (!clipboard) return;
 
-    el.value = formatColor(picked);
-    el.disabled = false;
-    el.select();
+    clipboard.value = formatColor(picked);
+    clipboard.select();
     document.execCommand("copy");
-    el.disabled = true;
+    clipboard.blur();
   }
 
   // These need to be on props for dat.gui buttons

@@ -1,6 +1,9 @@
 // Open static dialog
 const openAbout = () => {
 
+  // State is fun
+  if (document.querySelector('.about')) return;
+
   // Make div wrapper
   const div = document.createElement('div');
   div.className = 'about';
