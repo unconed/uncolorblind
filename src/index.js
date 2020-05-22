@@ -229,8 +229,10 @@ const onLoad = () => {
     if (!el) return;
 
     el.value = formatColor(picked);
+    el.disabled = false;
     el.select();
     document.execCommand("copy");
+    el.disabled = true;
   }
 
   // These need to be on props for dat.gui buttons
