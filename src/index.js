@@ -290,8 +290,10 @@ const onLoad = () => {
 
     // .5s transition
     const step = 2 * delta;
-    if (state.transition < +props.rainbow) state.transition += step;
-    if (state.transition > +props.rainbow) state.transition -= step;
+    if (delta > 0) {
+      if (state.transition < +props.rainbow) state.transition += step;
+      if (state.transition > +props.rainbow) state.transition -= step;
+    }
     state.transition = Math.max(0, Math.min(1, state.transition));
 
     // Upload video data
