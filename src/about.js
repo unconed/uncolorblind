@@ -13,7 +13,7 @@ const openAbout = () => {
 
     <div class="grow">
       <div class="grow">
-        <p class="description">Enjoy these virtual <b class="no-wrap">un-color blindness goggles</b>.<br />Browse the <b>examples</b> in the corner to get started.</p>
+        <p class="description">Enjoy these virtual <b class="no-wrap">un-color blindness goggles</b>.<br />Browse the <b>examples</b> at the top to get started.</p>
         <p><b>Drag and drop</b> an image to view it, or use <b class="no-wrap">your camera</b> to filter video live.<span class="no-mobile"><br />Click to <b>shift the highlighted color tint</b>.<br /><b>CSS color codes</b> are copied to the clipboard.</span></p>
       </div>
 
