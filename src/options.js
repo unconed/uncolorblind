@@ -166,7 +166,7 @@ const DAT = {
       "closed": true,
       "folders": {}
     },
-    "Settings": {
+    "Pattern": {
       "preset": "Default",
       "closed": true,
       "folders": {}

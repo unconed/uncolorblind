@@ -9,7 +9,7 @@ const openAbout = () => {
   div.innerHTML = `
   
   <div class="flex-if-wide align-center">
-    <h1 class="rigid"><img src="./assets/logo-512.png" width="192" height="192"> UncolorBlind</h1>
+    <h1 class="rigid"><img src="./assets/logo-512.png" width="192" height="192"> Un-Colorblind</h1>
 
     <div class="grow">
       <div class="grow">

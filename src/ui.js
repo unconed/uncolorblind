@@ -19,7 +19,7 @@ const mountUI = (props, onChangeImage, onChangeRainbow) => {
   f1.add(props, 'vision', MODES).name('Vision');
   f1.add(props, 'active').name('Apply Filter');
 
-  let f2 = gui.addFolder('Settings');
+  let f2 = gui.addFolder('Pattern');
   f2.add(props, 'moving').name('Animate');
   f2.add(props, 'pattern', PATTERNS).name('Pattern');
   f2.add(props, 'direction', DIRECTIONS).name('Direction');
