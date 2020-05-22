@@ -19,9 +19,9 @@ const mountUI = (props, onChangeImage) => {
   f2.add(props, 'moving').name('Animate');
   f2.add(props, 'pattern', PATTERNS).name('Pattern');
   f2.add(props, 'direction', DIRECTIONS).name('Direction');
-  f2.add(props, 'intensity').min(0).max(1).step(1/255).name('Intensity');
+  f2.add(props, 'intensity').min(0).max(1).step(1/100).name('Intensity');
   f2.add(props, 'invert').name('Invert');
-  f2.add(props, 'background').min(0).max(1).step(1/255).name('Background Level');
+  f2.add(props, 'background').min(0).max(1).step(1/100).name('Background Level');
 
   let f3 = gui.addFolder('Custom Filter');
   f3.add(props, 'highlight').min(0).max(1).step(1/360).name('Hue').listen();

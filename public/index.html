@@ -76,6 +76,7 @@
       bottom: 0px;
       margin: 0 20px 220px 0;
       padding: 0;
+      border: 0;
       width: 48px;
       height: 48px;
       border-radius: 100%;
@@ -254,9 +255,21 @@
       }
     }
     
-    // Dat gui layering
+    /* Dat gui layering */
+    .dg .c::after {
+      content: '';
+      clear: both;
+      display: table;
+    }
     .dg.ac {
       z-index: 10 !important;  
+    }
+    .dg.ac select {
+      padding: 0;
+      height: 24px;
+      padding-bottom: 2px;
+      font-size: 12px;
+      margin-top: -2px;
     }
   </style>
   <header>

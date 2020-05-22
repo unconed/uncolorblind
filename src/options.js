@@ -10,11 +10,11 @@ const DAT = {
         "moving": true,
         "pattern": 1,
         "direction": 1,
-        "intensity": 0.6509803921568628,
+        "intensity": 0.65,
         "invert": false,
         "background": 0,
-        "highlight": 0.2916666666666667,
-        "range": 0.51,
+        "highlight": 0.291,
+        "range": 0.45,
         "hardness": 2,
         "saturation": 0.5,
         "exclude": false
@@ -31,7 +31,7 @@ const DAT = {
         "invert": false,
         "background": 0,
         "highlight": 0.2916666666666667,
-        "range": 0.51,
+        "range": 0.45,
         "hardness": 2,
         "exclude": false
       }
@@ -140,6 +140,25 @@ const DAT = {
         "saturation": 0.1,
         "exclude": false
       }
+    },
+    "9 RGB": {
+      "0": {
+        "plate": "assets/ishihara_9.png",
+        "vision": 0,
+        "active": true,
+        "rainbow": true,
+        "moving": true,
+        "pattern": 1,
+        "direction": 1,
+        "intensity": 0.65,
+        "invert": false,
+        "background": 0,
+        "highlight": 0.05291744273915686,
+        "range": 0.45,
+        "hardness": 2,
+        "saturation": 0.5,
+        "exclude": false
+      }
     }
   },
   "folders": {
@@ -159,7 +178,7 @@ const DAT = {
       "folders": {}
     }
   },
-  "preset": "COVID-19 FT Monochrome"
+  "preset": "9 RGB"
 };
 
 const PLATES = {

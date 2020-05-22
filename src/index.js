@@ -16,21 +16,20 @@ const SHADER = require('raw-loader!./shader.glsl').default;
 
 const props = {
   "plate": "assets/ishihara_9.png",
-  "vision": 0,
-  "rainbow": true,
+  "vision": "0",
   "active": true,
-  "clipboard": true,
+  "rainbow": true,
+  "moving": true,
   "pattern": 1,
   "direction": 1,
   "intensity": 0.65,
-  "moving": true,
-  "exclude": false,
   "invert": false,
   "background": 0,
-  "highlight": 0.2916,
-  "range": 0.59,
-  "saturation": 0.5,
+  "highlight": 0.291,
+  "range": 0.45,
   "hardness": 2,
+  "saturation": 0.5,
+  "exclude": false
 };
 
 const state = {
