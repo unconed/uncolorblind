@@ -17,6 +17,8 @@ const openAbout = () => {
         <p><b>Drag and drop</b> an image to view it, or use <b class="no-wrap">your camera</b> to filter video live.<span class="no-mobile"><br />Click to <b>shift the highlighted color tint</b>.<br /><b>CSS color codes</b> are copied to the clipboard.</span></p>
       </div>
 
+      <p class="close button grow"><button>Got it!</button></p>
+
       <div class="flex flex-if-not-narrow justify-center wrap features">
         <div class="footer flex flex-if-not-narrow">
   
@@ -29,7 +31,6 @@ const openAbout = () => {
   
         </div>
 
-        <p class="close button grow"><button>Got it!</button></p>
       </div>
     </div>
   </div>
