@@ -7,7 +7,7 @@ const getCanvas = (width, height) => {
   const c = canvas || document.createElement('canvas');
   if (!canvas) canvas = c;
 
-  if (c.width  != width) c.width = width;
+  if (c.width  != width)  c.width = width;
   if (c.height != height) c.height = height;
   return c;
 }
@@ -65,17 +65,37 @@ const mountLoader = (regl, setLoading, setTexture) => {
       }),
     };
   };
-  
 
-  const makeImageTexture = (image) => ({
-    rgba: toRGBA(image),
-    texture: regl.texture({
-      data: image,
-      mag: 'linear',
-      min: 'linear',
-      premultiplyAlpha: true
-    }),
-  });
+  const fitImage = (image) => {
+    const {maxTextureSize} = regl.limits;
+    let {width, height} = image;
+
+    let resize = false;
+    if (width  > maxTextureSize) { width  = maxTextureSize; resize = true; }
+    if (height > maxTextureSize) { height = maxTextureSize; resize = true; }
+
+    if (resize) {
+      const c = getCanvas(width, height);
+      const ctx = c.getContext('2d');
+      ctx.drawImage(image, 0, 0, width, height);
+      return c;
+    }
+
+    return image;
+  }
+
+  const makeImageTexture = (image) => {
+    image = fitImage(image);
+    return {
+      rgba: toRGBA(image),
+      texture: regl.texture({
+        data: image,
+        mag: 'linear',
+        min: 'linear',
+        premultiplyAlpha: true
+      }),
+    };
+  };
 
   const loadTexture = (src) => {
     if (src == '') return;
@@ -87,7 +107,7 @@ const mountLoader = (regl, setLoading, setTexture) => {
     setLoading(true);
     return loadImageURL(src, (t) => {
       setLoading(false);
-      CACHE[src] = t;
+      if (t) CACHE[src] = t;
     });
   }
 
@@ -109,10 +129,12 @@ const mountLoader = (regl, setLoading, setTexture) => {
         }
       },
       onDone: ({texture: t}) => {
-        setTexture(t);
         f && f(t);
+        setTexture(t);
       },
-      onError: () => {
+      onError: (e) => {
+        console.error(e);
+        f && f();
         loadTexture('./assets/errorfile.svg');
       },
     });

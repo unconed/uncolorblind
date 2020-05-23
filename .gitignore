@@ -2,3 +2,4 @@
 node_modules
 sync*.sh
 public/build
+yarn-error.log
