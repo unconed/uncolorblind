@@ -20,6 +20,9 @@ const getCamera = () => {
     return new Promise((resolve) => {
       video.oncanplay = () => resolve({video});
     });
+  })
+  .catch((e) => {
+    console.error(e);
   });
 }
 
