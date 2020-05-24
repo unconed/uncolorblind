@@ -310,6 +310,12 @@ const onLoad = () => {
   if (isFirstTime()) openAbout();
 };
 
+// Fill in #define placeholders in shader code
+const prepareShader = (code, defs = []) => {
+  code = code.replace('#defs', defs.map(x => `#define ${x}\n`));
+  return code;
+}
+
 const drawImage = regl({
 
   // Screen-filling triangle
@@ -363,8 +369,8 @@ const drawImage = regl({
     enable: false,
   },
 
-  vert: SHADER.replace('#defs', '#define VERTEX'),
-  frag: SHADER.replace('#defs', '#define FRAGMENT'),
+  vert: prepareShader(SHADER, ['VERTEX']),
+  frag: prepareShader(SHADER, ['FRAGMENT']),
 
 });
 
