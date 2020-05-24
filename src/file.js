@@ -2,6 +2,25 @@ const resl = require('resl');
 const selectFile = require('file-select');
 const dragDrop = require('drag-drop');
 
+const safariFix = (() => {
+  const {userAgent} = navigator;
+  if (userAgent.match(/Safari/) && !userAgent.match(/Chrome/)) {
+    return (info) => {
+      const {data: src, width, height} = info;
+      let dest = getUint8Array(src.length);
+      for (let i = 0; i < src.length; ++i) dest[i] = src[i];
+      return {data: dest, width, height};
+    }
+  }
+  return _ => _;
+})();
+
+let buffer = null;
+const getUint8Array = (length) => {
+  if (buffer && buffer.length == length) return buffer;
+  return buffer = new Uint8Array(length);
+}
+
 let canvas = null;
 const getCanvas = (width, height) => {
   const c = canvas || document.createElement('canvas');
@@ -25,6 +44,7 @@ const toRGBA = (image) => {
     const data = ctx.getImageData(0, 0, c.width, c.height);
     return data;
   } catch (e) {
+    console.error(e);
     return {data: [], width, height};
   }
   return data;
@@ -42,7 +62,10 @@ const mountLoader = (regl, setLoading, setTexture) => {
       if (texture.width !== data.width || texture.height !== data.height) {
         texture({width: data.width, height: data.height});
       }
-      if (data.width && data.height) texture.subimage(data);
+      if (data.width && data.height) {
+        debugger;
+        texture.subimage(safariFix(data));
+      }
       self.rgba = data;
     };
     
