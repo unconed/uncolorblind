@@ -77,7 +77,7 @@ const mountScrubber = (getUV, getBarUV, getPicking, pickUV, setHover, setColor, 
     const {changedTouches} = e;
     const {clientX, clientY} = changedTouches[0];
     onDown(clientX, clientY);
-    e.s = onSample(clientX, clientY, alignAnchored);
+    e.stopPan = onSample(clientX, clientY, alignAnchored);
     e.preventDefault();
   }
 
