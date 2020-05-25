@@ -64,7 +64,7 @@ const mountScrubber = (getUV, getBarUV, getPicking, pickUV, setHover, setColor, 
     const flipY = v > .5 ? '-100%' : '0';
 
     return {
-      className: 'tooltip anchored',
+      className: 'tooltip',
       style: {
         left: `${left}px`,
         top:  `${top}px`,
@@ -77,7 +77,7 @@ const mountScrubber = (getUV, getBarUV, getPicking, pickUV, setHover, setColor, 
     const {changedTouches} = e;
     const {clientX, clientY} = changedTouches[0];
     onDown(clientX, clientY);
-    e.stopPan = onSample(clientX, clientY, alignAnchored);
+    e.s = onSample(clientX, clientY, alignAnchored);
     e.preventDefault();
   }
 
