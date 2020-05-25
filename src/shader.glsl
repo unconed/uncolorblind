@@ -211,7 +211,7 @@ vec2 pixelGrid() {
   #ifdef TEST_PATTERN
   if (vUV.y <= bar.x) 
   #endif
-  return gl_FragCoord.xy + offset;
+  return gl_FragCoord.xy + offset * dpr;
   return gl_FragCoord.xy;
 } 
 
