@@ -93,8 +93,10 @@ const mountScrubber = (getUV, getBarUV, getPicking, pickUV, setHover, setColor, 
 
   const onMouseDown = (e) => {
     let {clientX, clientY} = e;
-    if (e.buttons & 1) onDown(clientX, clientY);
-    onSample(clientX, clientY, alignPointer);
+    if (e.buttons & 1 && !metaKey && !shiftKey) {
+      onDown(clientX, clientY);
+      onSample(clientX, clientY, alignPointer);
+    }
     e.preventDefault();
   }
   
