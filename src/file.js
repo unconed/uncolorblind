@@ -8,7 +8,7 @@ const safariFix = (() => {
     return (info) => {
       const {data: src, width, height} = info;
       let dest = getUint8Array(src.length);
-      for (let i = 0; i < srclength; ++i) dest[i] = src[i];
+      for (let i = 0; i < src.length; ++i) dest[i] = src[i];
       return {data: dest, width, height};
     }
   }
