@@ -8,7 +8,7 @@ const safariFix = (() => {
     return (info) => {
       const {data: src, width, height} = info;
       let dest = getUint8Array(src.length);
-      for (let i = 0; i < src.length; ++i) dest[i] = src[i];
+      for (let i = 0; i < srclength; ++i) dest[i] = src[i];
       return {data: dest, width, height};
     }
   }
@@ -63,7 +63,6 @@ const mountLoader = (regl, setLoading, setTexture) => {
         texture({width: data.width, height: data.height});
       }
       if (data.width && data.height) {
-        debugger;
         texture.subimage(safariFix(data));
       }
       self.rgba = data;

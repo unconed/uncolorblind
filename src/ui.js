@@ -47,82 +47,68 @@ const mountUI = (props, onChangeImage, onChangeRainbow) => {
   document.querySelector('.dat-gui .close-button').style.minWidth = '100%';
 }
 
-const mountScrubber = (getUV, getBarUV, pickUV, setHover, setColor, setHue) => {
+const mountScrubber = (getUV, getBarUV, getPicking, pickUV, setHover, setColor, setHue) => {
 
   const tooltip = document.querySelector('.tooltip');
   const canvas = document.querySelector('canvas');
+  
+  const alignAnchored = () => ({ className: 'tooltip anchored' });
+  const alignPointer = (u, v, left, top) => {
+    return alignAnchored();
+
+    // Move tooltip beside cursor
+    const bump = u > .5 ? -10 : 10;
+    left += bump;
+
+    // Flip tooltip to other side by quadrant
+    const flipX = u > .5 ? '-100%' : '0';
+    const flipY = v > .5 ? '-100%' : '0';
+
+    return {
+      className: 'tooltip anchored',
+      style: {
+        left: `${left}px`,
+        top:  `${top}px`,
+        transform: `translate(${flipX}, ${flipY})`,
+      }
+    };
+  }
 
   const onTouch = (e) => {
     const {changedTouches} = e;
     const {clientX, clientY} = changedTouches[0];
     onDown(clientX, clientY);
+    e.stopPan = onSample(clientX, clientY, alignAnchored);
+    e.preventDefault();
+  }
+
+  const onTouchStart = (e) => onTouch(e);
+  const onTouchMove  = (e) => onTouch(e);
+
+  const onMouseMove = (e) => {
+    let {clientX, clientY} = e;
+    onHover(clientX, clientY);
+    onSample(clientX, clientY, alignPointer);
+    e.preventDefault();
+  }
+
+  const onMouseDown = (e) => {
+    let {clientX, clientY} = e;
+    onDown(clientX, clientY);
+    onSample(clientX, clientY, alignPointer);
     e.preventDefault();
   }
   
-  const onTouchStart = (e) => onTouch(e);
-  const onTouchMove = (e) => onTouch(e);
-  
-  const onMouseMove = (e) => {
-    let {clientX, clientY} = e;
-    return onHover(clientX, clientY);
-  }
-  
-  const onMouseDown = (e) => {
-    let {clientX, clientY} = e;
-    return onDown(clientX, clientY);
-  }
-  
   const onHover = (clientX, clientY) => {
-    {
-      // Scrub on bar
-      const [u, v] = getBarUV(clientX, clientY);
-      const h = (((u - .5) * 1.1 + .5) + 2) % 1;
-      const hover = (v > 0.0 && v < 1.0) ? h : null;
-      setHover(hover);
-    }
+    // Scrub on bar
+    const [u, v] = getBarUV(clientX, clientY);
+    const h = (((u - .5) * 1.1 + .5) + 2) % 1;
+    const hover = (v > 0.0 && v < 1.0) ? h : null;
+    setHover(hover);
+  }
 
-    const [u, v] = getUV(clientX, clientY);
-
-    // Move tooltip beside cursor
-    const bump = u > .5 ? -10 : 10;
-    tooltip.style.left = `${clientX + bump}px`;
-    tooltip.style.top  = `${clientY}px`;
-  
-    // Luminosity for text contrast
-    const [r, g, b, a] = pickUV(u, v);
-    const lum = Math.sqrt(toLinear(r) * 0.212 + toLinear(g) * 0.615 + toLinear(b) * 0.173);
-
-    // If opaque
-    let html = '';
-    if (a > 0.2) {
-      const float = [r, g, b, a];
-      const simple = describeColor(float);
-      const color  = lookupColor(float);
-      const css    = formatColor(float);
-
-      if (color) {
-        const light = lum > .6;
-        const blend = x => toSRGB(lerp(toLinear(x), light, .75));
-        const tint = formatColor([blend(r), blend(g), blend(b), 1]);
-
-        html = `
-        ${color.name}<br />
-        <small><em>${simple}</small></em><br />
-        <code>${css}</code>`;
-        tooltip.style.background = `rgb(${r*255},${g*255},${b*255})`;
-        tooltip.style.color = light ? '#000' : '#fff';
-        tooltip.style.textShadow = light ? null : `0 1px 2px ${tint}, 0 2px 5px ${tint}`;
-                
-        const flipX = u > .5 ? '-100%' : '0';
-        const flipY = v > .5 ? '-100%' : '0';
-        tooltip.style.transform = `translate(${flipX}, ${flipY})`;
-      }
-    }
-    if (tooltip.innerHTML !== html) tooltip.innerHTML = html;
-    tooltip.style.display = html != '' ? 'block' : 'none';
-  };
-  
   const onDown = (clientX, clientY) => {
+    // Click anywhere
     const [u, v] = getUV(clientX, clientY);
     const float = pickUV(u, v);
     const [r, g, b, a] = float;
@@ -134,11 +120,57 @@ const mountScrubber = (getUV, getBarUV, pickUV, setHover, setColor, setHue) => {
     }
   };
 
+  const onSample = (clientX, clientY, getStyle) => {
+    // Sample color at pixel
+    const [u, v] = getUV(clientX, clientY);
+    const [r, g, b, a] = pickUV(u, v);
+
+    let html = '';
+    // If opaque & picking tool is active, display tooltip
+    if (getPicking() && a > 0.2) {
+
+      // Luminosity for text contrast
+      const lum = Math.sqrt(toLinear(r) * 0.212 + toLinear(g) * 0.615 + toLinear(b) * 0.173);
+
+      // Describe color in a few ways
+      const float = [r, g, b, a];
+      const simple = describeColor(float);
+      const color  = lookupColor(float);
+      const css    = formatColor(float);
+
+      if (color) {
+        const light = lum > .6;
+        const blend = x => toSRGB(lerp(toLinear(x), light, .75));
+        const tint = formatColor([blend(r), blend(g), blend(b), 1]);
+
+        html = `
+        <div>
+          <div>${color.name}</div>
+          <div><small><em>${simple}</small></em></div>
+          <div><code>${css}</code></div>
+        </div>`;
+        tooltip.style.background = `rgb(${r*255},${g*255},${b*255})`;
+        tooltip.style.color = light ? '#000' : '#fff';
+        tooltip.style.textShadow = light ? null : `0 1px 2px ${tint}, 0 2px 5px ${tint}`;
+
+        const {className, style} = getStyle(u, v, clientX, clientY);
+        if (className) tooltip.className = className;
+        if (style) for (let k in style) tooltip.style[k] = style[k];
+      }
+    }
+
+    if (tooltip.innerHTML !== html) tooltip.innerHTML = html;
+    tooltip.style.display = html != '' ? 'block' : 'none';
+
+    // Check if on bar
+    return getBarUV(clientX, clientY)[1] >= 0;
+  };
+
   canvas.addEventListener('mousemove', onMouseMove);
   canvas.addEventListener('mousedown', onMouseDown);
 
-  canvas.addEventListener('touchstart', onTouchStart);
-  canvas.addEventListener('touchmove', onTouchMove);
+  canvas.addEventListener('touchstart', onTouchStart, true);
+  canvas.addEventListener('touchmove',  onTouchMove, true);
 
 }
 

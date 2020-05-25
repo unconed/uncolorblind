@@ -76,8 +76,6 @@ const getUV = (clientX, clientY) => {
 // Pick color at UV coordinates
 const NO_PIXEL = [0, 0, 0, 0];
 const pickUV = (u, v) => {
-  if (!state.picking) return [0, 0, 0, 0];
-  
   let {projection, bar} = getCurrentLayout();
   let {rgba, texture: {width, height}} = state.image;
 
@@ -86,6 +84,8 @@ const pickUV = (u, v) => {
     const [r, g, b] = testPattern(u, 1 - (v - bar[0]) * bar[1]);
     return [r, g, b, 1];
   }
+
+  if (!state.picking) return [0, 0, 0, 0];
 
   // Transform to image UV
   let v3 = vec3.create();
@@ -199,6 +199,7 @@ const onLoad = () => {
   };
 
   // Picking tool toggle
+  const getPicking = () => state.picking;
   const togglePicking = () => { state.picking = !state.picking; updatePicking(); }
 
   const canvas = document.querySelector('canvas');
@@ -258,20 +259,21 @@ const onLoad = () => {
     return [u, (v - bar[0]) * bar[1]];
   };
 
+  // Mount color picker
+  mountScrubber(
+    getUV, getBarUV, getPicking, pickUV,
+    (hover) => state.hover = hover,
+    (picked) => { state.picked = picked; copyColor() },
+    (highlight) => props.highlight = highlight
+  );
+
   // Mount pan-and-zoom
   mountPan(
     () => getCurrentLayout().projection,
     () => state.matrix,
+    () => state.picking,
     (matrix) => mat3.multiply(state.matrix, matrix, state.matrix),
     (x, y) => vec2.add(state.offset, state.offset, [x, -y])
-  );
-
-  // Mount color picker
-  mountScrubber(
-    getUV, getBarUV, pickUV,
-    (hover) => state.hover = hover,
-    (picked) => { state.picked = picked; copyColor() },
-    (highlight) => props.highlight = highlight
   );
 
   let last = null;

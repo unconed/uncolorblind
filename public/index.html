@@ -36,6 +36,10 @@
 </head>
 <body class="with-bar">
   <style>
+    html, body {
+      overflow: hidden;
+    }
+    
     body {
       background: #000;
       color: #fff;
@@ -133,7 +137,32 @@
       font-weight: bold;
       background: rgba(0, 0, 0, 0.5);
       box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
-      z-index: 2;
+      z-index: 3;
+    }
+    .tooltip.anchored {
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0px;
+      transition: bottom .5s ease-in-out;
+      z-index: 1;
+    }
+    .tooltip.anchored > div {
+      display: flex;
+    }
+    .tooltip.anchored > div > div {
+      padding: 5px 10px;
+      box-shadow: 1px 0 0 rgba(255, 255, 255, .2);
+      border-right: 1px solid rgba(0, 0, 0, .2);
+    }
+    .tooltip.anchored > div > div:nth-child(2) {
+      line-height: 20px;
+    }
+    .tooltip.anchored > div > div:nth-child(3) {
+      line-height: 18px;
+    }
+
+    body.with-bar .tooltip.anchored {
+      bottom: 200px;
     }
     
     .toolbar {
@@ -141,7 +170,7 @@
       bottom: 0px;
       right: 0px;
       margin: 0 10px 10px 0;
-      z-index: 1;
+      z-index: 2;
       transition: bottom .5s ease-in-out;
     }
     
@@ -197,7 +226,7 @@
       font-size: 14px;
       color: #ddd;
       position: absolute;
-      z-index: 30;
+      z-index: 20;
       left: 50%;
       top: 50%;
       box-sizing: border-box;
@@ -445,6 +474,9 @@
       body.with-bar .toolbar {
         bottom: 100px;
       }
+      body.with-bar .tooltip.anchored {
+        bottom: 100px;
+      }
       header {
         top: auto;
         bottom: 100px;
@@ -455,6 +487,9 @@
     @media screen 
     and (max-height : 425px) {
       body.with-bar .toolbar {
+        bottom: 70px;
+      }
+      body.with-bar .tooltip.anchored {
         bottom: 70px;
       }
       header {
@@ -645,6 +680,6 @@
   <div class="regl"></div>
   <div class="dat-gui"></div>
   <div class="hint"><img src="./assets/dropfile.svg" alt=""></div>
-  <script src="build/index.bundle.js?29"></script>
+  <script src="build/index.bundle.js?47"></script>
 </body>
 </html>
