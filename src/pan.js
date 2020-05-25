@@ -131,7 +131,10 @@ const mountPan = (getProjection, getView, getPicking, applyMatrix, applyTranslat
 
   // Inertial scrolling
   let running = false;
-  const onTouchStart = () => { if (running) running = false; }
+  const onTouchStart = () => {
+    if (running) running = false;
+    velocity.x = velocity.y = 0;
+  };
   const onTouchEnd = () => {
     if (!running) {
       running = true;
@@ -155,7 +158,7 @@ const mountPan = (getProjection, getView, getPicking, applyMatrix, applyTranslat
 
       requestAnimationFrame(loop);
     }
-  }
+  };
 
   // On touch add/remove
   const onTouchChange = (e) => {
