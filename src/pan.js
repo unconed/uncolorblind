@@ -2,6 +2,7 @@ const mat3 = require('gl-matrix/mat3');
 const vec3 = require('gl-matrix/vec2');
 const vec2 = require('gl-matrix/vec2');
 
+const lerp = (a, b, t) => a * (1 - t) + b * t;
 const sqr = x => x * x;
 
 const mountPan = (getProjection, getView, getPicking, applyMatrix, applyTranslation) => {
@@ -27,9 +28,15 @@ const mountPan = (getProjection, getView, getPicking, applyMatrix, applyTranslat
 
   // Movement handler
   const applyMove = (dx, dy) => {
+
+    // 2D screen space offset
+    applyTranslation(dx, dy)
+
+    // Zoom-aware matrix translation
+    const [fx, fy] = getPanSpeed();
     mat3.identity(mat);
-    mat[6] = dx;
-    mat[7] = dy;
+    mat[6] = dx * fx;
+    mat[7] = dy * fy;
     applyMatrix(mat);
   };
 
@@ -65,9 +72,7 @@ const mountPan = (getProjection, getView, getPicking, applyMatrix, applyTranslat
       (buttons & 4) ||
       ((buttons & 1) && (metaKey || altKey))
     ) {
-      const [fx, fy] = getPanSpeed();
-      applyTranslation(-movementX, -movementY);
-      applyMove(-movementX * fx, -movementY * fy);
+      applyMove(-movementX, -movementY);
       grabbing = true;
     }
     
@@ -78,15 +83,13 @@ const mountPan = (getProjection, getView, getPicking, applyMatrix, applyTranslat
   // Mousewheel is used for scrolling and panning (shift)
   let m = mat3.create();
   const onWheel = (e) => {
-    const {offsetX, offsetY, deltaX, deltaY, deltaMode, shiftKey} = e;
+    const {offsetX, offsetY, deltaX, deltaY, deltaMode, shiftKey, metaKey} = e;
 
     const factor = deltaMode ? 10 : 1;
     const speed  = factor * 1.2;
-    const [fx, fy] = getPanSpeed();
     
-    if (shiftKey) {
-      applyTranslation(deltaX * speed, deltaY * speed);
-      applyMove(deltaX * speed * fx, deltaY * speed * fy);
+    if (shiftKey || metaKey) {
+      applyMove(deltaX * speed, deltaY * speed);
     }
     else {
       const [u, v] = getUV(offsetX, offsetY);
@@ -104,6 +107,7 @@ const mountPan = (getProjection, getView, getPicking, applyMatrix, applyTranslat
   // Touch controls
   let center = null;
   let radius = null;
+  let velocity = {x: 0, y: 0};
 
   // Track gesture center
   const getCenter = (touches) => {
@@ -125,12 +129,42 @@ const mountPan = (getProjection, getView, getPicking, applyMatrix, applyTranslat
     return Math.sqrt(x2 + y2);
   }
 
+  // Inertial scrolling
+  let running = false;
+  const onTouchStart = () => { if (running) running = false; }
+  const onTouchEnd = () => {
+    if (!running) {
+      running = true;
+      let last = performance.now();
+
+      const loop = (now) => {
+        running && requestAnimationFrame(loop);
+
+        const dt = now - last;
+        last = now;
+
+        const {x, y} = velocity;
+        applyMove(x, y);
+
+        const f = Math.pow(0.93, dt * 60 / 1000);
+        velocity.x *= f;
+        velocity.y *= f;
+                
+        if (velocity.x < 1e-4 & velocity.y < 1e-4) running = false;
+      }
+
+      requestAnimationFrame(loop);
+    }
+  }
+
   // On touch add/remove
   const onTouchChange = (e) => {
     if (getPicking()) return;
     if (e.stopPan) return;
 
     const touches = Array.from(e.targetTouches);
+    const n = touches.length;
+    n > 0 ? onTouchStart() : onTouchEnd();
 
     center = getCenter(touches);
     radius = getRadius(touches, center);
@@ -139,7 +173,7 @@ const mountPan = (getProjection, getView, getPicking, applyMatrix, applyTranslat
     e.stopPropagation();
   };
 
-  // On touch move
+  // On touch move  
   const onTouchMove = (e) => {
     if (getPicking()) return;
     if (e.stopPan) return;
@@ -153,14 +187,13 @@ const mountPan = (getProjection, getView, getPicking, applyMatrix, applyTranslat
     if (center != null) {
       // Center of mass changed: pan
       if (n >= 1) {
-        const [fx, fy] = getPanSpeed();
-
         const dx = c.x - center.x;
         const dy = c.y - center.y;
 
         if (dx || dy) {
-          applyMove(-dx * fx, -dy * fy);      
-          applyTranslation(-dx, -dy);
+          velocity.x = lerp(velocity.x, -dx, .5);
+          velocity.y = lerp(velocity.y, -dy, .5);
+          applyMove(-dx, -dy);
         }
       }
       // Radius changed: zoom
