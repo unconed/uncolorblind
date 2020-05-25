@@ -54,7 +54,6 @@ const mountScrubber = (getUV, getBarUV, getPicking, pickUV, setHover, setColor, 
   
   const alignAnchored = () => ({ className: 'tooltip anchored' });
   const alignPointer = (u, v, left, top) => {
-    return alignAnchored();
 
     // Move tooltip beside cursor
     const bump = u > .5 ? -10 : 10;
